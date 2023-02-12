@@ -1,50 +1,72 @@
-import { MemoryRouter as Router, Routes, Route } from 'react-router-dom';
-import icon from '../../assets/icon.svg';
-import './App.css';
+import { createBrowserRouter, createHashRouter, Link, Outlet, RouterProvider } from "react-router-dom";
+import Home, { loader as homeLoader } from "./routes/_index";
+import Client, { loader as clientLoader, action as clientAction } from "./routes/clientId";
+import Me, { loader as meLoader, action as meAction } from "./routes/me";
+import Invoice, { loader as invoiceLoader, action as invoiceAction } from "./routes/invoiceId";
+import "./styles/tailwind.css";
+import "./styles/global.css";
+import "./styles/reset.css";
 
-function Hello() {
+function Root() {
   return (
-    <div>
-      <div className="Hello">
-        <img width="200" alt="icon" src={icon} />
+    <div className="h-full w-full">
+      <div className="w-full text-sm border-b border-gray-400 flex print:hidden">
+        <Link to="me" className="px-5 py-2">
+          My identity
+        </Link>
+        <Link to="home" className="px-5 py-2">
+          My invoices
+        </Link>
+        <Link to="client" className="px-5 py-2">
+          My clients
+        </Link>
       </div>
-      <h1>electron-react-boilerplate</h1>
-      <div className="Hello">
-        <a
-          href="https://electron-react-boilerplate.js.org/"
-          target="_blank"
-          rel="noreferrer"
-        >
-          <button type="button">
-            <span role="img" aria-label="books">
-              📚
-            </span>
-            Read our docs
-          </button>
-        </a>
-        <a
-          href="https://github.com/sponsors/electron-react-boilerplate"
-          target="_blank"
-          rel="noreferrer"
-        >
-          <button type="button">
-            <span role="img" aria-label="folded hands">
-              🙏
-            </span>
-            Donate
-          </button>
-        </a>
-      </div>
+      <Outlet />
     </div>
   );
 }
 
+const router = createHashRouter(
+  [
+    {
+      path: "/",
+      element: <Root />,
+      children: [
+        {
+          path: "home",
+          element: <Home />,
+          loader: homeLoader,
+        },
+        {
+          path: "me",
+          element: <Me />,
+          loader: meLoader,
+          action: meAction,
+        },
+        {
+          path: "/invoice/:invoice_number",
+          element: <Invoice />,
+          loader: invoiceLoader,
+          action: invoiceAction,
+          errorElement: <div>Invoice not found</div>,
+        },
+        {
+          path: "/client/:clientId",
+          element: <Client />,
+          loader: clientLoader,
+          action: clientAction,
+        },
+      ],
+    },
+  ],
+  {
+    // initialEntries: ["/", "/invoice/new", "/invoice/2023-02-004"],
+    // initialEntries: ["/", "/me"],
+    // initialEntries: ["/", "/client/481 071 769 00071"],
+    // initialEntries: ["/"],
+  },
+);
+
 export default function App() {
-  return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<Hello />} />
-      </Routes>
-    </Router>
-  );
+  return <RouterProvider router={router} />;
 }
