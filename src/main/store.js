@@ -15,6 +15,10 @@ const store = new Store({
           type: "string",
           default: "",
         },
+        invoice_number_format: {
+          type: "string",
+          default: "",
+        },
       },
     },
   },
@@ -29,9 +33,7 @@ ipcMain.handle("app:get-settings", async () => {
   const settings = store.get("settings");
   // check if invoices_folder_path is a real path)
   if (settings.invoices_folder_path) {
-    console.log("YES ");
     if (!fs.existsSync(settings.invoices_folder_path)) {
-      console.log("AND YES ");
       settings.invoices_folder_path_error = true;
     }
   }

@@ -1,3 +1,4 @@
+import dayjs from "dayjs";
 import { useRef, useState } from "react";
 import { Form, useLoaderData } from "react-router-dom";
 import { getSettings, setSettings } from "renderer/utils/settings";
@@ -25,7 +26,12 @@ function Settings() {
   );
 
   const defaultInvoiceName = `{INVOICE NUMBER} - {MY COMPANY NAME} - {CLIENT NAME} - {INVOICE TITLE}.pdf`;
-  const [saveDisabled, setSaveDisabled] = useState(defaultInvoiceName === defaultValues.current.invoice_file_name);
+  const defaultInvoiceNumberFormat = `{YYYY}-{MM}-{INC}`;
+  const [saveDisabled, setSaveDisabled] = useState(() => {
+    if (defaultInvoiceName !== defaultValues.current.invoice_file_name) return false;
+    if (defaultInvoiceNumberFormat !== defaultValues.current.invoice_number_format) return false;
+    return true;
+  });
 
   return (
     <Form
@@ -100,6 +106,38 @@ function Settings() {
                 </li>
                 <li>
                   <code>{`{CLIENT NAME}`}</code> - The client name
+                </li>
+              </ul>
+            </details>
+            <label htmlFor="name">Typical invoice file name</label>
+          </div>
+          <div className="mb-3 flex max-w-screen-lg flex-col-reverse gap-2">
+            <input
+              name="invoice_number_format"
+              type="text"
+              id="invoice_number_format"
+              className="outline-main block w-full rounded border border-black bg-transparent p-2.5 text-black transition-all"
+              placeholder="{YYYY}-{MM}-{INC}"
+              defaultValue={defaultValues.current.invoice_number_format || defaultInvoiceNumberFormat}
+            />
+            <details open className="text-xs text-gray-500 pl-8">
+              <summary className="-mr-4">
+                Here below are the list of items you can use to make up your invoice name
+              </summary>
+              We&#39;ll replace the following items with the actual values (don&#39;t forget to add the curly brackets
+              around the item name):
+              <ul className="list-inside list-disc">
+                <li>
+                  <code>{`{YYYY}`}</code> - The current year (e.g. {dayjs().format("YYYY")})
+                </li>
+                <li>
+                  <code>{`{MM}`}</code> - The current month (e.g. {dayjs().format("MM")})
+                </li>
+                <li>
+                  <code>{`{CLIENT CODE}`}</code> - The client code if any
+                </li>
+                <li>
+                  <code>{`{INC}`}</code> - The incremental number (e.g. 001, 002, 003, etc.)
                 </li>
               </ul>
             </details>

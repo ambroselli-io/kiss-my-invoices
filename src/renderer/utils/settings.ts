@@ -3,6 +3,7 @@
 export type Settings = {
   invoices_folder_path: string;
   invoice_file_name: string;
+  invoice_number_format: string;
   invoices_folder_path_error: boolean;
 };
 

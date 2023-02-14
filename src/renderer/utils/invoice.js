@@ -10,3 +10,19 @@ export const getInvoiceName = ({ invoice, me, client, settings }) => {
     .replace(/{MY COMPANY NAME}/g, me.organisation_name)
     .replace(/{CLIENT NAME}/g, client.organisation_name);
 };
+
+const getClientCode = (client) => {
+  if (!client) return "XXXX";
+  if (client.code) return client.code;
+  return "";
+};
+
+export const getInvoiceNumber = ({ client, emissionDate, settings, inc }) => {
+  const template = settings.invoice_number_format;
+  return template
+    .replace(/{YYYY}/g, dayjs(emissionDate).format("YYYY"))
+    .replace(/{MM}/g, dayjs(emissionDate).format("MM"))
+    .replace(/{CLIENT CODE}/g, getClientCode(client))
+    .replace(/{INC}/g, inc)
+    .replace("--", "-");
+};

@@ -1,7 +1,7 @@
 import { Link, redirect, useFetcher, useLoaderData } from "react-router-dom";
 import dayjs from "dayjs";
 import html2pdf from "html2pdf.js";
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { readFile, writeFile } from "renderer/utils/fileManagement";
 import useSetDocumentTitle from "renderer/services/useSetDocumentTitle";
 import OpenInNewWindowIcon from "renderer/components/OpenInNewWindowIcon";
@@ -13,7 +13,7 @@ import {
   getItemPriceWithVat,
 } from "renderer/utils/prices";
 import { getSettings } from "renderer/utils/settings";
-import { getInvoiceName } from "renderer/utils/invoiceExport";
+import { getInvoiceName, getInvoiceNumber } from "renderer/utils/invoice";
 
 export const loader = async ({ params }) => {
   const settings = await getSettings();
@@ -71,16 +71,35 @@ function Invoice() {
   const [items, setItems] = useState(invoice?.items?.length > 0 ? invoice?.items : [defaultItem]);
 
   const client = clients.find((_client) => _client.organisation_number === invoice?.client);
-
-  const invoiceNumber =
-    invoice?.invoice_number || `${dayjs().format("YYYY-MM")}-${String(invoices.length + 2).padStart(3, "0")}`;
-
-  useSetDocumentTitle(
-    `Invoice ${invoiceNumber} - ${client?.organisation_name} - ${dayjs(invoice?.emission_date).format("DD/MM/YYYY")}`,
-  );
+  const originalClient = useRef(client);
 
   const defaultEmissionDate = dayjs(invoice?.emission_date);
   const defaultDueDate = dayjs(invoice?.due_date || defaultEmissionDate.add(1, "month"));
+
+  const invoiceNumber = useMemo(() => {
+    const defaultInvoiceNumber = getInvoiceNumber({
+      emissionDate: defaultEmissionDate,
+      settings,
+      client,
+      inc: String(invoices.length + 2).padStart(3, "0"),
+    });
+    if (!settings.invoice_number_format.includes("CLIENT CODE")) return invoice?.invoice_number || defaultInvoiceNumber;
+    if (!client) return invoice?.invoice_number || defaultInvoiceNumber;
+    if (invoice?.invoice_number?.includes("XXXX")) {
+      return defaultInvoiceNumber;
+    }
+    if (originalClient.current?.organisation_number !== client?.organisation_number) {
+      originalClient.current = client;
+      return defaultInvoiceNumber;
+    }
+    return invoice?.invoice_number || defaultInvoiceNumber;
+  }, [invoice?.invoice_number, defaultEmissionDate, settings, client, invoices.length]);
+
+  useSetDocumentTitle(
+    `Invoice ${invoiceNumber}${client?.organisation_name ? ` - ${client?.organisation_name}` : ""} - ${dayjs(
+      invoice?.emission_date,
+    ).format("DD/MM/YYYY")}`,
+  );
 
   const [isPrinting, setIsPrinting] = useState(false);
 
@@ -208,7 +227,7 @@ function Invoice() {
           isPrinting ? "!border-none !m-0" : "flex",
         ].join(" ")}
       >
-        <invoiceFetcher.Form className="mb-10 flex justify-between">
+        <invoiceFetcher.Form className="mb-10 flex justify-between" key={invoiceNumber}>
           <p className="mb-0 text-xl text-gray-900">Invoice</p>
           <p className="text-right">
             <b>

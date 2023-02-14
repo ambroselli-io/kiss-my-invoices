@@ -21,7 +21,6 @@ function Root() {
   const invoices_folder_path = settings?.invoices_folder_path;
   const invoices_folder_path_error = settings?.invoices_folder_path_error;
 
-  console.log("matches", matches);
   // check if match.patname matched /invoice/:invoice_number, invoice_number is any string
   // and get the invoice_number
   const isInvoice = matches[1]?.pathname?.match(/^\/invoice\/.+/);
