@@ -19,6 +19,7 @@ module.exports = {
     "no-promise-executor-return": "off",
     "import/prefer-default-export": "off",
     "react/no-array-index-key": "off",
+    camelcase: "off",
   },
   parserOptions: {
     ecmaVersion: 2020,

@@ -1,6 +1,7 @@
 import { Link, redirect, useFetcher, useLoaderData } from "react-router-dom";
 import dayjs from "dayjs";
-import { useState } from "react";
+import html2pdf from "html2pdf.js";
+import { useRef, useState } from "react";
 import { readFile, writeFile } from "renderer/utils/fileManagement";
 import useSetDocumentTitle from "renderer/services/useSetDocumentTitle";
 import OpenInNewWindowIcon from "renderer/components/OpenInNewWindowIcon";
@@ -11,8 +12,11 @@ import {
   getFormattedTotalVAT,
   getItemPriceWithVat,
 } from "renderer/utils/prices";
+import { getSettings } from "renderer/utils/settings";
+import { getInvoiceName } from "renderer/utils/invoiceExport";
 
 export const loader = async ({ params }) => {
+  const settings = await getSettings();
   const me = await readFile("me.json", { default: {} });
   const clients = await readFile("clients.json", { default: [] });
   const invoices = await readFile("invoices.json", { default: [] });
@@ -20,7 +24,7 @@ export const loader = async ({ params }) => {
     params.invoice_number !== "new"
       ? invoices.find((_invoice) => _invoice.invoice_number === params.invoice_number)
       : null;
-  return { invoice, invoices, clients, me };
+  return { settings, invoice, invoices, clients, me };
 };
 
 export const action = async ({ request, params }) => {
@@ -52,7 +56,7 @@ export const action = async ({ request, params }) => {
 };
 
 function Invoice() {
-  const { invoices, invoice, clients, me } = useLoaderData();
+  const { invoices, invoice, clients, me, settings } = useLoaderData();
 
   const defaultItem = {
     title: "",
@@ -62,6 +66,7 @@ function Invoice() {
   };
 
   const invoiceFetcher = useFetcher();
+  const printableAreaRef = useRef(null);
 
   const [items, setItems] = useState(invoice?.items?.length > 0 ? invoice?.items : [defaultItem]);
 
@@ -77,9 +82,20 @@ function Invoice() {
   const defaultEmissionDate = dayjs(invoice?.emission_date);
   const defaultDueDate = dayjs(invoice?.due_date || defaultEmissionDate.add(1, "month"));
 
+  const [isPrinting, setIsPrinting] = useState(false);
+
   return (
-    <div className="border-80 h-full w-full overflow-auto print:overflow-hidden">
-      <div className="my-12 flex items-center justify-between px-12 print:hidden">
+    <div
+      className={[
+        "border-80 h-full w-full overflow-auto print:overflow-hidden",
+        isPrinting ? "!overflow-hidden" : "",
+      ].join(" ")}
+    >
+      <div
+        className={["my-12 flex items-center justify-between px-12 print:hidden", isPrinting ? "!hidden" : ""].join(
+          " ",
+        )}
+      >
         <h1 className="text-3xl font-bold">Invoice</h1>
         <div className="flex items-center gap-4">
           <button
@@ -97,14 +113,60 @@ function Invoice() {
             className="rounded border py-2 px-12"
             type="button"
             onClick={() => {
-              console.log("email");
+              // eslint-disable-next-line new-cap
+              // const pdfGenerator = new jsPDF({
+              //   orientation: "portrait",
+              //   unit: "mm",
+              //   format: "a4",
+              // });
+              // pdfGenerator.html(printableAreaRef.current, {
+              //   callback(pdfFile) {
+              //     pdfFile.save("printable-page.pdf");
+              //   },
+              // });
+
+              const opt = {
+                margin: 0,
+                filename: getInvoiceName({ invoice, me, settings, client }),
+                image: { type: "jpeg", quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+              };
+              setIsPrinting(true);
+              html2pdf()
+                .from(printableAreaRef.current)
+                .set(opt)
+                .save()
+                .then(() => {
+                  setIsPrinting(false);
+                  return true;
+                })
+                .catch((err) => {
+                  setIsPrinting(false);
+                  console.log(err);
+                });
+            }}
+          >
+            Export as PDF
+          </button>
+          <button
+            className="rounded border py-2 px-12"
+            type="button"
+            onClick={() => {
+              window.electron.ipcRenderer.invoke("app:send-email");
             }}
           >
             ＠ Email
           </button>
         </div>
       </div>
-      <invoiceFetcher.Form method="POST" className="flew-wrap my-8 flex items-center justify-center gap-4 print:hidden">
+      <invoiceFetcher.Form
+        method="POST"
+        className={[
+          "flew-wrap my-8 flex items-center justify-center gap-4 print:hidden",
+          isPrinting ? "!hidden" : "flex",
+        ].join(" ")}
+      >
         <input type="hidden" name="invoice_number" defaultValue={invoiceNumber} />
         {clients.map((_client) => {
           return (
@@ -139,7 +201,13 @@ function Invoice() {
           );
         })}
       </invoiceFetcher.Form>
-      <div className="h-a4 w-a4 m-auto mb-10 flex max-w-3xl flex-col overflow-hidden border border-gray-500 p-8 text-base text-gray-600 print:border-none">
+      <div
+        ref={printableAreaRef}
+        className={[
+          "h-a4 w-a4 m-auto mb-10 flex max-w-3xl flex-col overflow-hidden border border-gray-500 p-8 text-base text-gray-600 print:border-none",
+          isPrinting ? "!border-none !m-0" : "flex",
+        ].join(" ")}
+      >
         <invoiceFetcher.Form className="mb-10 flex justify-between">
           <p className="mb-0 text-xl text-gray-900">Invoice</p>
           <p className="text-right">
@@ -149,7 +217,7 @@ function Invoice() {
                 type="text"
                 placeholder={invoiceNumber}
                 name="invoice_number"
-                className="print:hidden"
+                className={["print:hidden", isPrinting ? "!hidden" : ""].join(" ")}
                 defaultValue={invoiceNumber}
                 size={invoiceNumber.length}
                 onBlur={(e) => {
@@ -159,14 +227,14 @@ function Invoice() {
                   invoiceFetcher.submit(form, { method: "post" });
                 }}
               />
-              <span className="hidden print:inline">{invoiceNumber}</span>
+              <span className={["hidden print:inline", isPrinting ? "!inline" : ""].join(" ")}>{invoiceNumber}</span>
             </b>
             <br />
             Emission date:{" "}
             <input
               type="date"
               name="emission_date"
-              className="print:hidden"
+              className={["print:hidden", isPrinting ? "!hidden" : ""].join(" ")}
               defaultValue={defaultEmissionDate.format("YYYY-MM-DD")}
               onBlur={(e) => {
                 const form = new FormData();
@@ -176,13 +244,15 @@ function Invoice() {
                 invoiceFetcher.submit(form, { method: "post" });
               }}
             />
-            <span className="hidden print:inline">{defaultEmissionDate.format("DD/MM/YYYY")}</span>
+            <span className={["hidden print:inline", isPrinting ? "!inline" : ""].join(" ")}>
+              {defaultEmissionDate.format("DD/MM/YYYY")}
+            </span>
             <br />
             Due date:{" "}
             <input
               type="date"
               name="due_date"
-              className="print:hidden"
+              className={["print:hidden", isPrinting ? "!hidden" : ""].join(" ")}
               defaultValue={defaultDueDate.format("YYYY-MM-DD")}
               onBlur={(e) => {
                 const form = new FormData();
@@ -192,7 +262,9 @@ function Invoice() {
                 invoiceFetcher.submit(form, { method: "post" });
               }}
             />
-            <span className="hidden print:inline">{defaultDueDate.format("DD/MM/YYYY")}</span>
+            <span className={["hidden print:inline", isPrinting ? "!inline" : ""].join(" ")}>
+              {defaultDueDate.format("DD/MM/YYYY")}
+            </span>
           </p>
         </invoiceFetcher.Form>
         <div className="mb-10 flex justify-between">
@@ -281,7 +353,7 @@ function Invoice() {
         </div>
         <div className="mt-2 grid grid-cols-invoice  border border-transparent">
           <button
-            className="col-span-2  print:hidden"
+            className={["col-span-2 print:hidden", isPrinting ? "!hidden" : ""].join(" ")}
             type="button"
             onClick={() => {
               setItems([...items, defaultItem]);

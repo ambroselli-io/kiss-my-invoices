@@ -3,10 +3,19 @@ const path = require("path");
 const fs = require("fs-extra");
 const os = require("os");
 const chokidar = require("chokidar");
+const store = require("./store");
 
+const getFolderPath = () => {
+  const settings = store.get("settings");
+  return settings?.invoices_folder_path;
+};
 // create a file
-ipcMain.handle("app:write-file", async (_event, { appDir, fileName, content }) => {
-  const filePath = path.resolve(os.homedir(), appDir, fileName);
+ipcMain.handle("app:write-file", async (_event, { fileName, content }) => {
+  const invoices_folder_path = getFolderPath();
+  if (!fs.existsSync(invoices_folder_path)) {
+    return null;
+  }
+  const filePath = path.resolve(invoices_folder_path, fileName);
 
   if (!fs.existsSync(filePath)) {
     // create the file
@@ -16,8 +25,12 @@ ipcMain.handle("app:write-file", async (_event, { appDir, fileName, content }) =
 });
 
 // read file
-ipcMain.handle("app:read-file", async (_event, { appDir, fileName, default: defaultContent }) => {
-  const filePath = path.resolve(os.homedir(), appDir, fileName);
+ipcMain.handle("app:read-file", async (_event, { fileName, default: defaultContent }) => {
+  const invoices_folder_path = getFolderPath();
+  if (!fs.existsSync(invoices_folder_path)) {
+    return null;
+  }
+  const filePath = path.resolve(invoices_folder_path, fileName);
 
   if (!fs.existsSync(filePath)) {
     // create the file
@@ -29,8 +42,12 @@ ipcMain.handle("app:read-file", async (_event, { appDir, fileName, default: defa
 });
 
 // delete a file
-ipcMain.handle("app:delete-file", async (_event, { appDir, fileName }) => {
-  const filePath = path.resolve(os.homedir(), appDir, fileName);
+ipcMain.handle("app:delete-file", async (_event, { fileName }) => {
+  const invoices_folder_path = getFolderPath();
+  if (!fs.existsSync(invoices_folder_path)) {
+    return null;
+  }
+  const filePath = path.resolve(invoices_folder_path, fileName);
 
   if (fs.existsSync(filePath)) {
     fs.removeSync(filePath);
@@ -41,7 +58,7 @@ ipcMain.handle("app:delete-file", async (_event, { appDir, fileName }) => {
 
 // watch files from the application's storage directory
 exports.watchFiles = (appDir, win) => {
-  chokidar.watch(path.resolve(os.homedir(), appDir)).on("unlink", (filepath) => {
+  chokidar.watch(path.resolve(getFolderPath())).on("unlink", (filepath) => {
     win.webContents.send("app:delete-file", path.parse(filepath).base);
   });
 };

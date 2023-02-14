@@ -1,5 +1,6 @@
 import { Link, useLoaderData } from "react-router-dom";
 import { InvoiceRow } from "renderer/components/Invoice/InvoiceRow";
+import useSetDocumentTitle from "renderer/services/useSetDocumentTitle";
 import { readFile } from "renderer/utils/fileManagement";
 
 export const loader = async () => {
@@ -24,6 +25,8 @@ function Home() {
   const onColumnClick = (event) => {
     console.log(event);
   };
+
+  useSetDocumentTitle(`Invoices ${me?.organisation_name} | 💋 Kiss my Invoices`);
 
   return (
     <div className="flex h-full w-full flex-col">

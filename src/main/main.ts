@@ -15,6 +15,8 @@ import log from "electron-log";
 import MenuBuilder from "./menu";
 import { resolveHtmlPath } from "./util";
 import "./fileManagement";
+import "./store";
+import "./sendEmailWithAttachment";
 
 class AppUpdater {
   constructor() {
