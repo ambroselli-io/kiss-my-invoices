@@ -19,6 +19,14 @@ const store = new Store({
           type: "string",
           default: "",
         },
+        generic_email_template_body: {
+          type: "string",
+          default: "",
+        },
+        generic_email_template_subject: {
+          type: "string",
+          default: "",
+        },
       },
     },
   },

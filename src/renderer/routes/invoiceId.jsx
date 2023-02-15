@@ -14,6 +14,7 @@ import {
 } from "renderer/utils/prices";
 import { getSettings } from "renderer/utils/settings";
 import { getInvoiceName, getInvoiceNumber } from "renderer/utils/invoice";
+import { computeEmailBody, computeEmailSubject } from "renderer/utils/contact";
 
 export const loader = async ({ params }) => {
   const settings = await getSettings();
@@ -103,6 +104,38 @@ function Invoice() {
 
   const [isPrinting, setIsPrinting] = useState(false);
 
+  const generatePdf = async (folder) => {
+    const invoiceFileName = getInvoiceName({ invoice, me, settings, client });
+    const opt = {
+      margin: 0,
+      filename: invoiceFileName,
+      image: { type: "jpeg", quality: 0.98 },
+      html2canvas: { scale: 2 },
+      jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+    };
+    setIsPrinting(true);
+    if (!folder) {
+      return html2pdf()
+        .from(printableAreaRef.current)
+        .set(opt)
+        .save()
+        .catch((err) => {
+          setIsPrinting(false);
+          console.log(err);
+        });
+    }
+    const pdfData = await html2pdf()
+      .from(printableAreaRef.current)
+      .set(opt)
+      .output("arraybuffer") // Use output method with 'arraybuffer' option
+      .catch((err) => {
+        setIsPrinting(false);
+        console.log(err);
+      });
+    setIsPrinting(false);
+    return pdfData;
+  };
+
   return (
     <div
       className={[
@@ -110,11 +143,7 @@ function Invoice() {
         isPrinting ? "!overflow-hidden" : "",
       ].join(" ")}
     >
-      <div
-        className={["my-12 flex items-center justify-between px-12 print:hidden", isPrinting ? "!hidden" : ""].join(
-          " ",
-        )}
-      >
+      <div className={["my-12 flex items-center justify-between px-12 print:hidden"].join(" ")}>
         <h1 className="text-3xl font-bold">Invoice</h1>
         <div className="flex items-center gap-4">
           <button
@@ -131,49 +160,28 @@ function Invoice() {
           <button
             className="rounded border py-2 px-12"
             type="button"
-            onClick={() => {
-              // eslint-disable-next-line new-cap
-              // const pdfGenerator = new jsPDF({
-              //   orientation: "portrait",
-              //   unit: "mm",
-              //   format: "a4",
-              // });
-              // pdfGenerator.html(printableAreaRef.current, {
-              //   callback(pdfFile) {
-              //     pdfFile.save("printable-page.pdf");
-              //   },
-              // });
-
-              const opt = {
-                margin: 0,
-                filename: getInvoiceName({ invoice, me, settings, client }),
-                image: { type: "jpeg", quality: 0.98 },
-                html2canvas: { scale: 2 },
-                jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
-              };
-              setIsPrinting(true);
-              html2pdf()
-                .from(printableAreaRef.current)
-                .set(opt)
-                .save()
-                .then(() => {
-                  setIsPrinting(false);
-                  return true;
-                })
-                .catch((err) => {
-                  setIsPrinting(false);
-                  console.log(err);
-                });
-            }}
+            title="It will export the invoice as PDF in the location of your choice."
+            onClick={() => generatePdf()}
           >
             Export as PDF
           </button>
           <button
             className="rounded border py-2 px-12"
             type="button"
-            onClick={() => {
+            onClick={async () => {
+              const pdfData = await generatePdf(settings.invoices_folder_path);
+
+              const invoiceFileName = getInvoiceName({ invoice, me, settings, client });
+              const filePathAndName = `${settings.invoices_folder_path}/${invoiceFileName}`;
+
+              window.electron.ipcRenderer.invoke("app:save-pdf", pdfData, filePathAndName);
+
+              // const body = computeEmailBody({ settings, client, invoice, me });
+              // const subject = computeEmailSubject({ settings, client, invoice, me });
+
               window.electron.ipcRenderer.invoke("app:send-email");
             }}
+            title="It will export the invoice as PDF in your folder, and open your default email client with the generic email template you defined in your settings."
           >
             ＠ Email
           </button>
@@ -181,10 +189,7 @@ function Invoice() {
       </div>
       <invoiceFetcher.Form
         method="POST"
-        className={[
-          "flew-wrap my-8 flex items-center justify-center gap-4 print:hidden",
-          isPrinting ? "!hidden" : "flex",
-        ].join(" ")}
+        className={["flew-wrap my-8 flex items-center justify-center gap-4 print:hidden"].join(" ")}
       >
         <input type="hidden" name="invoice_number" defaultValue={invoiceNumber} />
         {clients.map((_client) => {
@@ -220,192 +225,191 @@ function Invoice() {
           );
         })}
       </invoiceFetcher.Form>
-      <div
-        ref={printableAreaRef}
-        className={[
-          "h-a4 w-a4 m-auto mb-10 flex max-w-3xl flex-col overflow-hidden border border-gray-500 p-8 text-base text-gray-600 print:border-none",
-          isPrinting ? "!border-none !m-0" : "flex",
-        ].join(" ")}
-      >
-        <invoiceFetcher.Form className="mb-10 flex justify-between" key={invoiceNumber}>
-          <p className="mb-0 text-xl text-gray-900">Invoice</p>
-          <p className="text-right">
-            <b>
-              Invoice #:{" "}
+      <div className={["h-a4 w-a4 m-auto mb-10 max-w-3xl border border-gray-500"].join(" ")}>
+        <div
+          ref={printableAreaRef}
+          className="h-a4 w-a4 max-w-3xl text-base text-gray-600 overflow-hidden flex flex-col p-8"
+        >
+          <invoiceFetcher.Form className="mb-10 flex justify-between" key={invoiceNumber}>
+            <p className="mb-0 text-xl text-gray-900">Invoice</p>
+            <p className="text-right">
+              <b>
+                Invoice #:{" "}
+                <input
+                  type="text"
+                  placeholder={invoiceNumber}
+                  name="invoice_number"
+                  className={["print:hidden", isPrinting ? "!hidden" : ""].join(" ")}
+                  defaultValue={invoiceNumber}
+                  size={invoiceNumber.length}
+                  onBlur={(e) => {
+                    const form = new FormData();
+                    form.append("invoice_number", e.currentTarget.value);
+                    form.append("from", "invoice number");
+                    invoiceFetcher.submit(form, { method: "post" });
+                  }}
+                />
+                <span className={["hidden print:inline", isPrinting ? "!inline" : ""].join(" ")}>{invoiceNumber}</span>
+              </b>
+              <br />
+              Emission date:{" "}
               <input
-                type="text"
-                placeholder={invoiceNumber}
-                name="invoice_number"
+                type="date"
+                name="emission_date"
                 className={["print:hidden", isPrinting ? "!hidden" : ""].join(" ")}
-                defaultValue={invoiceNumber}
-                size={invoiceNumber.length}
+                defaultValue={defaultEmissionDate.format("YYYY-MM-DD")}
                 onBlur={(e) => {
                   const form = new FormData();
-                  form.append("invoice_number", e.currentTarget.value);
-                  form.append("from", "invoice number");
+                  form.append(e.currentTarget.name, e.currentTarget.value);
+                  form.append("invoice_number", invoiceNumber);
+                  form.append("from", "emission date");
                   invoiceFetcher.submit(form, { method: "post" });
                 }}
               />
-              <span className={["hidden print:inline", isPrinting ? "!inline" : ""].join(" ")}>{invoiceNumber}</span>
-            </b>
-            <br />
-            Emission date:{" "}
-            <input
-              type="date"
-              name="emission_date"
-              className={["print:hidden", isPrinting ? "!hidden" : ""].join(" ")}
-              defaultValue={defaultEmissionDate.format("YYYY-MM-DD")}
-              onBlur={(e) => {
-                const form = new FormData();
-                form.append(e.currentTarget.name, e.currentTarget.value);
-                form.append("invoice_number", invoiceNumber);
-                form.append("from", "emission date");
-                invoiceFetcher.submit(form, { method: "post" });
-              }}
-            />
-            <span className={["hidden print:inline", isPrinting ? "!inline" : ""].join(" ")}>
-              {defaultEmissionDate.format("DD/MM/YYYY")}
-            </span>
-            <br />
-            Due date:{" "}
-            <input
-              type="date"
-              name="due_date"
-              className={["print:hidden", isPrinting ? "!hidden" : ""].join(" ")}
-              defaultValue={defaultDueDate.format("YYYY-MM-DD")}
-              onBlur={(e) => {
-                const form = new FormData();
-                form.append(e.currentTarget.name, e.currentTarget.value);
-                form.append("invoice_number", invoiceNumber);
-                form.append("from", "due date");
-                invoiceFetcher.submit(form, { method: "post" });
-              }}
-            />
-            <span className={["hidden print:inline", isPrinting ? "!inline" : ""].join(" ")}>
-              {defaultDueDate.format("DD/MM/YYYY")}
-            </span>
-          </p>
-        </invoiceFetcher.Form>
-        <div className="mb-10 flex justify-between">
-          <p>
-            <b>{me?.organisation_name}</b>
-            <br />
-            {me?.address}
-            <br />
-            {me?.zip} {me?.city}
-            <br />
-            {me?.country}
-            <br />
-            {me?.organisation_number_type}: {me?.organisation_number}
-            <br />
-            VAT: {me?.vat_number}
-          </p>
-          <p className="text-right">
-            <b>{client?.organisation_name}</b>
-            <br />
-            {client?.address}
-            <br />
-            {client?.zip} {client?.city}
-            <br />
-            {client?.country}
-            <br />
-            {client?.organisation_number_type}: {client?.organisation_number}
-            <br />
-            VAT: {client?.vat_number}
-          </p>
-        </div>
-        <input
-          type="text"
-          className="mt-3 mb-6 w-full text-xl font-semibold"
-          placeholder="Title of invoice"
-          name="title"
-          defaultValue={invoice?.title}
-          onBlur={(e) => {
-            const { value } = e.currentTarget;
-            const form = new FormData();
-            form.append("title", value);
-            form.append("invoice_number", invoiceNumber);
-            form.append("from", "title");
-            form.append("emission_date", defaultEmissionDate.format("YYYY-MM-DD"));
-            form.append("due_date", defaultDueDate.format("YYYY-MM-DD"));
-            invoiceFetcher.submit(form, { method: "post" });
-          }}
-        />
-        <div className="grid grid-cols-invoice overflow-hidden border border-gray-400 bg-gray-300">
-          <div />
-          <p className="flex h-full items-center">Item</p>
-          <p className="border-l border-gray-400 text-center">Quantity (days)</p>
-          <p className="border-l border-gray-400 text-center">
-            Pre-tax price
-            <br />
-            (€)
-          </p>
-          <p className="border-l border-gray-400 text-center">
-            VAT
-            <br />
-            (%)
-          </p>
-          <p className="border-l border-gray-400 text-center">
-            Price
-            <br />
-            (€)
-          </p>
-        </div>
-        {items?.map((item, index) => {
-          return (
-            <Item
-              key={index + item.title}
-              invoiceFetcher={invoiceFetcher}
-              invoiceNumber={invoiceNumber}
-              item={item}
-              index={index}
-              setItems={setItems}
-              items={items}
-              defaultEmissionDate={defaultEmissionDate}
-              defaultDueDate={defaultDueDate}
-            />
-          );
-        })}
-        <div className="mt-2 grid grid-cols-invoice  border border-transparent">
-          <p className="col-start-5 text-right">Pre-tax total:</p>
-          <p className="text-center">{getFormattedTotalPretaxPrice(items)} €</p>
-        </div>
-        <div className="mt-2 grid grid-cols-invoice  border border-transparent">
-          <button
-            className={["col-span-2 print:hidden", isPrinting ? "!hidden" : ""].join(" ")}
-            type="button"
-            onClick={() => {
-              setItems([...items, defaultItem]);
+              <span className={["hidden print:inline", isPrinting ? "!inline" : ""].join(" ")}>
+                {defaultEmissionDate.format("DD/MM/YYYY")}
+              </span>
+              <br />
+              Due date:{" "}
+              <input
+                type="date"
+                name="due_date"
+                className={["print:hidden", isPrinting ? "!hidden" : ""].join(" ")}
+                defaultValue={defaultDueDate.format("YYYY-MM-DD")}
+                onBlur={(e) => {
+                  const form = new FormData();
+                  form.append(e.currentTarget.name, e.currentTarget.value);
+                  form.append("invoice_number", invoiceNumber);
+                  form.append("from", "due date");
+                  invoiceFetcher.submit(form, { method: "post" });
+                }}
+              />
+              <span className={["hidden print:inline", isPrinting ? "!inline" : ""].join(" ")}>
+                {defaultDueDate.format("DD/MM/YYYY")}
+              </span>
+            </p>
+          </invoiceFetcher.Form>
+          <div className="mb-10 flex justify-between">
+            <p>
+              <b>{me?.organisation_name}</b>
+              <br />
+              {me?.address}
+              <br />
+              {me?.zip} {me?.city}
+              <br />
+              {me?.country}
+              <br />
+              {me?.organisation_number_type}: {me?.organisation_number}
+              <br />
+              VAT: {me?.vat_number}
+            </p>
+            <p className="text-right">
+              <b>{client?.organisation_name}</b>
+              <br />
+              {client?.address}
+              <br />
+              {client?.zip} {client?.city}
+              <br />
+              {client?.country}
+              <br />
+              {client?.organisation_number_type}: {client?.organisation_number}
+              <br />
+              VAT: {client?.vat_number}
+            </p>
+          </div>
+          <input
+            type="text"
+            className="mt-3 mb-6 w-full text-xl font-semibold"
+            placeholder="Title of invoice"
+            name="title"
+            defaultValue={invoice?.title}
+            onBlur={(e) => {
+              const { value } = e.currentTarget;
+              const form = new FormData();
+              form.append("title", value);
+              form.append("invoice_number", invoiceNumber);
+              form.append("from", "title");
+              form.append("emission_date", defaultEmissionDate.format("YYYY-MM-DD"));
+              form.append("due_date", defaultDueDate.format("YYYY-MM-DD"));
+              invoiceFetcher.submit(form, { method: "post" });
             }}
-          >
-            Add an item
-          </button>
-          <p className="col-start-5 text-right">VAT:</p>
-          <p className="text-center">{getFormattedTotalVAT(items)} €</p>
-        </div>
-        <div className=" mt-2 grid grid-cols-invoice  border border-transparent font-bold">
-          <p className="col-start-5 text-right">To pay:</p>
-          <p className="text-center">{getFormattedTotalPrice(items)} €</p>
-        </div>
-        <div className="mt-auto flex justify-start gap-4">
-          <p>Payment details:</p>
-          <p>
-            IBAN: NL20 BUNQ 2082 8975 83
+          />
+          <div className="grid grid-cols-invoice overflow-hidden border border-gray-400 bg-gray-300">
+            <div />
+            <p className="flex h-full items-center">Item</p>
+            <p className="border-l border-gray-400 text-center">Quantity (days)</p>
+            <p className="border-l border-gray-400 text-center">
+              Pre-tax price
+              <br />
+              (€)
+            </p>
+            <p className="border-l border-gray-400 text-center">
+              VAT
+              <br />
+              (%)
+            </p>
+            <p className="border-l border-gray-400 text-center">
+              Price
+              <br />
+              (€)
+            </p>
+          </div>
+          {items?.map((item, index) => {
+            return (
+              <Item
+                key={index + item.title}
+                invoiceFetcher={invoiceFetcher}
+                invoiceNumber={invoiceNumber}
+                item={item}
+                index={index}
+                setItems={setItems}
+                items={items}
+                defaultEmissionDate={defaultEmissionDate}
+                defaultDueDate={defaultDueDate}
+              />
+            );
+          })}
+          <div className="mt-2 grid grid-cols-invoice  border border-transparent">
+            <p className="col-start-5 text-right">Pre-tax total:</p>
+            <p className="text-center">{getFormattedTotalPretaxPrice(items)} €</p>
+          </div>
+          <div className="mt-2 grid grid-cols-invoice  border border-transparent">
+            <button
+              className={["col-span-2 print:hidden", isPrinting ? "!hidden" : ""].join(" ")}
+              type="button"
+              onClick={() => {
+                setItems([...items, defaultItem]);
+              }}
+            >
+              Add an item
+            </button>
+            <p className="col-start-5 text-right">VAT:</p>
+            <p className="text-center">{getFormattedTotalVAT(items)} €</p>
+          </div>
+          <div className="mt-2 grid grid-cols-invoice  border border-transparent font-bold">
+            <p className="col-start-5 text-right">To pay:</p>
+            <p className="text-center">{getFormattedTotalPrice(items)} €</p>
+          </div>
+          <div className="mt-auto flex justify-start gap-4">
+            <p>Payment details:</p>
+            <p>
+              IBAN: NL20 BUNQ 2082 8975 83
+              <br />
+              BIC: BUNQNL2AXXX <br />
+            </p>
+          </div>
+          <p className="text-sm mt-10">
+            <strong>Payment terms:</strong> Payment is due within 30 days of receipt of invoice. Late payments will be
+            subject to a 5% surcharge, to which will be added a 40€ collection fee.
+          </p>
+          <p className="mt-10 w-full text-center text-xs">
+            A.J.M. AMBROSELLI - Goudsbloemstraat 35D - 1015JJ Amsterdam - Netherlands
             <br />
-            BIC: BUNQNL2AXXX <br />
+            KVK Nummer: 88631273 - Btw-identificatienummer: NL004636768B16
+            <br />
+            <strong>Thank you for your business!</strong>
           </p>
         </div>
-        <p className="text-sm mt-10">
-          <strong>Payment terms:</strong> Payment is due within 30 days of receipt of invoice. Late payments will be
-          subject to a 5% surcharge, to which will be added a 40€ collection fee.
-        </p>
-        <p className="mt-10 w-full text-center text-xs">
-          A.J.M. AMBROSELLI - Goudsbloemstraat 35D - 1015JJ Amsterdam - Netherlands
-          <br />
-          KVK Nummer: 88631273 - Btw-identificatienummer: NL004636768B16
-          <br />
-          <strong>Thank you for your business!</strong>
-        </p>
       </div>
     </div>
   );

@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { Form, useLoaderData } from "react-router-dom";
+import useSetDocumentTitle from "renderer/services/useSetDocumentTitle";
 import { readFile, writeFile } from "renderer/utils/fileManagement";
 
 export const loader = async ({ params }) => {
@@ -34,6 +35,10 @@ function Client() {
     return JSON.parse(typeof window !== "undefined" ? window?.localStorage?.getItem("client") || "{}" : "{}");
   }, [client]);
 
+  useSetDocumentTitle(
+    `${defaultValues?.organisation_name ?? ""}${defaultValues?.organisation_name ? " | " : ""}💋 Kiss my Invoices`,
+  );
+
   return (
     <Form
       className="flex h-full w-full flex-col"
@@ -66,7 +71,8 @@ function Client() {
         </div>
       </div>
       <div className="flex flex-wrap">
-        <div className="flex min-w-md grow basis-1/3 flex-col gap-4 p-4">
+        <fieldset className="flex min-w-md grow basis-1/3 flex-col gap-4 p-4">
+          <h2 className="text-lg font-semibold">Organisation identity</h2>
           <div className="mb-3 flex max-w-lg flex-col-reverse gap-2">
             <input
               name="organisation_name"
@@ -137,8 +143,9 @@ function Client() {
             />
             <label htmlFor="is_vat_applicable">VAT applicable</label>
           </div>
-        </div>
-        <div className="flex min-w-md grow basis-1/3 flex-col gap-4 p-4">
+        </fieldset>
+        <fieldset className="flex min-w-md grow basis-1/3 flex-col gap-4 p-4">
+          <h2 className="text-lg font-semibold">Address details</h2>
           <div className="mb-3 flex max-w-lg flex-col-reverse gap-2">
             <textarea
               name="address"
@@ -148,7 +155,7 @@ function Client() {
               defaultValue={defaultValues.address}
               key={defaultValues.address}
             />
-            <label htmlFor="address">Address</label>
+            <label htmlFor="address">Street and street number and all</label>
           </div>
           <div className="mb-3 flex max-w-lg flex-col-reverse gap-2">
             <input
@@ -186,8 +193,9 @@ function Client() {
             />
             <label htmlFor="country">Country</label>
           </div>
-        </div>
-        <div className="flex min-w-md grow basis-1/3 flex-col gap-4 p-4">
+        </fieldset>
+        <fieldset className="flex min-w-md grow basis-1/3 flex-col gap-4 p-4">
+          <h2 className="text-lg font-semibold">Contact details</h2>
           <div className="mb-3 flex max-w-lg flex-col-reverse gap-2">
             <input
               name="contact_name"
@@ -237,7 +245,18 @@ function Client() {
             />
             <label htmlFor="phone">Phone</label>
           </div>
-        </div>
+          <div className="mb-3 flex max-w-lg flex-col-reverse gap-2">
+            <textarea
+              name="default_email_message"
+              id="default_email_message"
+              className="outline-main block w-full rounded border border-black bg-transparent p-2.5 text-black transition-all"
+              placeholder="Hello {CLIENT NAME},"
+              defaultValue={defaultValues.default_email_message}
+              key={defaultValues.default_email_message}
+            />
+            <label htmlFor="default_email_message">Default email message</label>
+          </div>
+        </fieldset>
       </div>
     </Form>
   );

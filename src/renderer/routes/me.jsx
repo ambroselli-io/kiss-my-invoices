@@ -159,6 +159,17 @@ function Me() {
           </div>
           <div className="mb-3 flex max-w-lg flex-col-reverse gap-2">
             <input
+              name="description"
+              type="text"
+              id="description"
+              className="outline-main block w-full rounded border border-black bg-transparent p-2.5 text-black transition-all"
+              placeholder="Web developer - Fullstack JS"
+              defaultValue={defaultValues.current.description}
+            />
+            <label htmlFor="contact_name">One liner description</label>
+          </div>
+          <div className="mb-3 flex max-w-lg flex-col-reverse gap-2">
+            <input
               name="email"
               type="email"
               id="email"
@@ -185,11 +196,21 @@ function Me() {
               type="text"
               id="phone"
               className="outline-main block w-full rounded border border-black bg-transparent p-2.5 text-black transition-all"
-              // placeholder french number with +33
               placeholder="+33 6 12 34 56 78"
               defaultValue={defaultValues.current.phone}
             />
             <label htmlFor="phone">Phone</label>
+          </div>
+          <div className="mb-3 flex max-w-lg flex-col-reverse gap-2">
+            <input
+              name="website"
+              type="text"
+              id="website"
+              className="outline-main block w-full rounded border border-black bg-transparent p-2.5 text-black transition-all"
+              placeholder="https://kiss-my-invoice.com"
+              defaultValue={defaultValues.current.website}
+            />
+            <label htmlFor="phone">Website</label>
           </div>
         </div>
       </div>

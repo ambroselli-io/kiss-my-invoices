@@ -9,6 +9,7 @@ import "./styles/global.css";
 import "./styles/reset.css";
 import { getSettings } from "./utils/settings";
 import type { Settings as SettingsType } from "./utils/settings";
+import Clients, { loader as clientsLoader } from "./routes/clients";
 
 const loader = async (): Promise<SettingsType> => {
   const settings = await getSettings();
@@ -115,6 +116,11 @@ const router = createHashRouter(
           loader: invoiceLoader,
           action: invoiceAction,
           errorElement: <div>Invoice not found</div>,
+        },
+        {
+          path: "/client",
+          element: <Clients />,
+          loader: clientsLoader,
         },
         {
           path: "/client/:clientId",

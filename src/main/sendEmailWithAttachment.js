@@ -1,7 +1,18 @@
 const { exec } = require("child_process");
 const { ipcMain } = require("electron");
+const fs = require("fs-extra");
 
 // create a file
+ipcMain.handle("app:save-pdf", async (_event, pdfData, filePathAndName) => {
+  fs.writeFile(filePathAndName, Buffer.from(pdfData), (err) => {
+    if (err) {
+      console.log(err);
+    } else {
+      console.log(`PDF saved to ${filePathAndName}`);
+    }
+  });
+});
+
 ipcMain.handle("app:send-email", async (_event, _params) => {
   exec(
     `osascript -e 'tell application "Mail"

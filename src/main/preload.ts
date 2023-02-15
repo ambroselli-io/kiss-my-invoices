@@ -2,7 +2,13 @@
 /* eslint no-unused-vars: off */
 import { contextBridge, ipcRenderer, IpcRendererEvent } from "electron";
 
-export type Channels = "app:read-file" | "app:write-file" | "app:get-settings" | "app:send-email" | "app:save-settings";
+export type Channels =
+  | "app:read-file"
+  | "app:write-file"
+  | "app:get-settings"
+  | "app:send-email"
+  | "app:save-settings"
+  | "app:save-pdf";
 
 const electronHandler = {
   ipcRenderer: {
