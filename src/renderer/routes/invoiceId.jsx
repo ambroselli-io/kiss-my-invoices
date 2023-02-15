@@ -174,12 +174,29 @@ function Invoice() {
               const invoiceFileName = getInvoiceName({ invoice, me, settings, client });
               const filePathAndName = `${settings.invoices_folder_path}/${invoiceFileName}`;
 
-              window.electron.ipcRenderer.invoke("app:save-pdf", pdfData, filePathAndName);
+              const confirmedPathName = await window.electron.ipcRenderer.invoke(
+                "app:save-pdf",
+                pdfData,
+                filePathAndName,
+              );
 
-              // const body = computeEmailBody({ settings, client, invoice, me });
-              // const subject = computeEmailSubject({ settings, client, invoice, me });
+              if (!confirmedPathName || confirmedPathName !== filePathAndName) {
+                return window.electron.ipcRenderer.invoke(
+                  "dialog:showMessageBoxSync",
+                  "The file was not saved. Please contact the developer.",
+                );
+              }
 
-              window.electron.ipcRenderer.invoke("app:send-email");
+              const body = computeEmailBody({ settings, client, invoice, me });
+              const subject = computeEmailSubject({ settings, client, invoice, me });
+
+              window.electron.ipcRenderer.invoke("app:send-email", {
+                to: client.email,
+                cc: client.email_cc,
+                subject,
+                body,
+                filePathAndName,
+              });
             }}
             title="It will export the invoice as PDF in your folder, and open your default email client with the generic email template you defined in your settings."
           >

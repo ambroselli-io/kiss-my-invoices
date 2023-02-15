@@ -9,7 +9,7 @@
  * `./src/main.js` using webpack. This gives us some performance wins.
  */
 import path from "path";
-import { app, BrowserWindow, shell, ipcMain } from "electron";
+import { app, BrowserWindow, shell, ipcMain, dialog } from "electron";
 import { autoUpdater } from "electron-updater";
 import log from "electron-log";
 import MenuBuilder from "./menu";
@@ -139,3 +139,8 @@ app
     });
   })
   .catch(console.log);
+
+// read file
+ipcMain.handle("dialog:showMessageBoxSync", async (_event, message) => {
+  return dialog.showMessageBoxSync(BrowserWindow?.getFocusedWindow(), { message });
+});
