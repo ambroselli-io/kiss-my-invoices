@@ -15,7 +15,7 @@ import log from "electron-log";
 import MenuBuilder from "./menu";
 import { resolveHtmlPath } from "./util";
 import "./fileManagement";
-import "./store";
+import store from "./store";
 import "./sendEmailWithAttachment";
 
 class AppUpdater {
@@ -71,10 +71,12 @@ const createWindow = async () => {
     return path.join(RESOURCES_PATH, ...paths);
   };
 
+  const windowBounds = store?.get("windowBounds");
+
   mainWindow = new BrowserWindow({
     show: false,
-    width: 1024,
-    height: 728,
+    width: windowBounds?.width || 800,
+    height: windowBounds?.height || 600,
     icon: getAssetPath("icon.png"),
     webPreferences: {
       // https://electron-react-boilerplate.js.org/docs/native-modules/
@@ -100,6 +102,14 @@ const createWindow = async () => {
 
   mainWindow.on("closed", () => {
     mainWindow = null;
+  });
+
+  mainWindow.on("resize", () => {
+    // The event doesn't pass us the window size, so we call the `getBounds` method which returns an object with
+    // the height, width, and x and y coordinates.
+    const { width, height } = mainWindow.getBounds();
+    // Now that we have them, save them using the `set` method.
+    store.set("windowBounds", { width, height });
   });
 
   const menuBuilder = new MenuBuilder(mainWindow);

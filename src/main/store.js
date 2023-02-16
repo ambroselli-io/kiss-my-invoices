@@ -4,6 +4,23 @@ const fs = require("fs-extra");
 
 const store = new Store({
   schema: {
+    windowBounds: {
+      type: "object",
+      default: {
+        width: 800,
+        height: 600,
+      },
+      properties: {
+        width: {
+          type: "number",
+          default: 800,
+        },
+        height: {
+          type: "number",
+          default: 600,
+        },
+      },
+    },
     settings: {
       type: "object",
       properties: {
