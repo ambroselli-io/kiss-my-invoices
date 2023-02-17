@@ -102,7 +102,7 @@ function Home() {
                 <HeaderButton title={`💸\u00A0Amount HT\u00A0`} field="globalAmount" onClick={onColumnClick} />
               </div>
             </div>
-            <div className="flex cursor-pointer border-y-2 border-x border-gray-900 bg-white p-2 text-left font-medium text-gray-900">
+            {/* <div className="flex cursor-pointer border-y-2 border-x border-gray-900 bg-white p-2 text-left font-medium text-gray-900">
               <div className="relative flex w-full -translate-y-1/2 rotate-90 md:translate-y-0 md:rotate-0">
                 <SortArrowButton
                   field="vat"
@@ -112,8 +112,8 @@ function Home() {
                 />
                 <HeaderButton title={`❗️\u00A0VAT`} field="vat" onClick={onColumnClick} />
               </div>
-            </div>
-            <div className="flex cursor-pointer border-y-2 border-x border-gray-900 bg-white p-2 text-left font-medium text-gray-900">
+            </div> */}
+            {/* <div className="flex cursor-pointer border-y-2 border-x border-gray-900 bg-white p-2 text-left font-medium text-gray-900">
               <div className="relative flex w-full -translate-y-1/2 rotate-90 md:translate-y-0 md:rotate-0">
                 <SortArrowButton
                   field="vat"
@@ -122,6 +122,17 @@ function Home() {
                   // sortBy={sortBy}
                 />
                 <HeaderButton title={`💵\u00A0Amount TTC`} field="price" onClick={onColumnClick} />
+              </div>
+            </div> */}
+            <div className="flex cursor-pointer border-y-2 border-x border-gray-900 bg-white p-2 text-left font-medium text-gray-900">
+              <div className="relative flex w-full -translate-y-1/2 rotate-90 md:translate-y-0 md:rotate-0">
+                <SortArrowButton
+                  field="vat"
+                  onClick={onColumnClick}
+                  // sortOrder={sortOrder}
+                  // sortBy={sortBy}
+                />
+                <HeaderButton title={`🧐\u00A0Status`} field="status" onClick={onColumnClick} />
               </div>
             </div>
           </div>

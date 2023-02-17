@@ -2,6 +2,7 @@ import { Link, useLoaderData } from "react-router-dom";
 import { InvoiceRow } from "renderer/components/Invoice/InvoiceRow";
 import useSetDocumentTitle from "renderer/services/useSetDocumentTitle";
 import { readFile } from "renderer/utils/fileManagement";
+import { getInvoicesTotalPrice } from "renderer/utils/prices";
 
 export const loader = async () => {
   const me = await readFile("me.json", { default: {} });
@@ -33,16 +34,19 @@ function Clients() {
       <div className="my-12 flex items-center justify-between px-12 print:hidden">
         <h1 className="text-3xl font-bold">Invoices {me?.organisation_name}</h1>
         <div className="flex items-center gap-4">
+          <Link className="rounded bg-gray-800 py-2 px-12 text-gray-50" to="/invoice/new">
+            New invoice
+          </Link>
           <Link className="rounded bg-gray-800 py-2 px-12 text-gray-50" to="/client/new">
             New client
           </Link>
         </div>
       </div>
       <main className="flex flex-1 basis-full flex-col justify-start pb-4 text-xs md:pb-8">
-        <div className="relative w-full max-w-full">
+        <div className="relative w-full max-w-3xl mx-auto border-x">
           <div
             aria-roledescription="Header of the list of features - Clicking on a column header can sort the invoice by the column, ascending or descending"
-            className="grid-cols-invoices sticky top-0 z-50 hidden md:grid"
+            className="grid-cols-clients sticky top-0 z-50 hidden md:grid"
           >
             <div className="flex cursor-pointer border-y-2 border-x border-gray-900 bg-white p-2 text-left font-medium text-gray-900">
               <div className="relative flex w-full -translate-y-1/2 rotate-90 md:translate-y-0 md:rotate-0">
@@ -55,7 +59,7 @@ function Clients() {
                 <HeaderButton title="Client name" field="organization_name" onClick={onColumnClick} />
               </div>
             </div>
-            {/* <div className="flex cursor-pointer border-y-2 border-x border-gray-900 bg-white p-2 text-left font-medium text-gray-900">
+            <div className="flex cursor-pointer border-y-2 border-x border-gray-900 bg-white p-2 text-left font-medium text-gray-900">
               <div className="relative flex w-full -translate-y-1/2 rotate-90 md:translate-y-0 md:rotate-0">
                 <SortArrowButton
                   field="content"
@@ -63,10 +67,10 @@ function Clients() {
                   // sortOrder={sortOrder}
                   // sortBy={sortBy}
                 />
-                <HeaderButton title="Address" field="address" onClick={onColumnClick} />
+                <HeaderButton title={`🤑\u00A0Draft`} field="draft" onClick={onColumnClick} />
               </div>
-            </div> */}
-            {/* <div className="flex cursor-pointer border-y-2 border-x border-gray-900 bg-white p-2 text-left font-medium text-gray-900">
+            </div>
+            <div className="flex cursor-pointer border-y-2 border-x border-gray-900 bg-white p-2 text-left font-medium text-gray-900">
               <div className="relative flex w-full -translate-y-1/2 rotate-90 md:translate-y-0 md:rotate-0">
                 <SortArrowButton
                   field="content"
@@ -74,9 +78,31 @@ function Clients() {
                   // sortOrder={sortOrder}
                   // sortBy={sortBy}
                 />
-                <HeaderButton title="Invoices" field="invoices" onClick={onColumnClick} />
+                <HeaderButton title={`💸\u00A0Sent`} field="sent" onClick={onColumnClick} />
               </div>
-            </div> */}
+            </div>
+            <div className="flex cursor-pointer border-y-2 border-x border-gray-900 bg-white p-2 text-left font-medium text-gray-900">
+              <div className="relative flex w-full -translate-y-1/2 rotate-90 md:translate-y-0 md:rotate-0">
+                <SortArrowButton
+                  field="content"
+                  onClick={onColumnClick}
+                  // sortOrder={sortOrder}
+                  // sortBy={sortBy}
+                />
+                <HeaderButton title={`💰\u00A0Paid`} field="paid" onClick={onColumnClick} />
+              </div>
+            </div>
+            <div className="flex cursor-pointer border-y-2 border-x border-gray-900 bg-white p-2 text-left font-medium text-gray-900">
+              <div className="relative flex w-full -translate-y-1/2 rotate-90 md:translate-y-0 md:rotate-0">
+                <SortArrowButton
+                  field="content"
+                  onClick={onColumnClick}
+                  // sortOrder={sortOrder}
+                  // sortBy={sortBy}
+                />
+                <HeaderButton title={`🤬\u00A0Overdue`} field="overdue" onClick={onColumnClick} />
+              </div>
+            </div>
             {/* <div className="cursor-pointer border-y-2 border-x border-gray-900 bg-white p-2 text-left font-medium text-gray-900 md:flex">
               <div className="relative flex w-full -translate-y-1/2 rotate-90 md:translate-y-0 md:rotate-0">
                 <SortArrowButton
@@ -96,7 +122,7 @@ function Clients() {
                   // sortOrder={sortOrder}
                   // sortBy={sortBy}
                 />
-                <HeaderButton title="New Invoice" field="new-invoice" onClick={onColumnClick} />
+                <HeaderButton field="new-invoice" onClick={onColumnClick} />
               </div>
             </div> */}
           </div>
@@ -106,15 +132,13 @@ function Clients() {
                 to={`/client/${client.organisation_number}`}
                 key={client.organisation_number}
                 aria-label={client.organisation_name}
-                className={["grid-cols-invoices group grid"].join(" ")}
+                className={["grid-cols-clients group grid"].join(" ")}
               >
-                <p className="border-x border-b-2 p-2">{client.organisation_name}</p>
-                {/* <p className="border-x border-b-2 p-2">{invoice.title}</p>
-                <p className="border-x border-b-2 p-2">{invoice.client.organisation_name}</p>
-                <p className="border-x border-b-2 p-2">{invoice.emission_date}</p>
-                <p className="border-x border-b-2 p-2">{getFormattedTotalPretaxPrice(invoice.items)} €</p>
-                <p className="border-x border-b-2 p-2">{getFormattedTotalVAT(invoice.items)} €</p>
-                <p className="border-x border-b-2 p-2">{getFormattedTotalPrice(invoice.items)} €</p> */}
+                <p className="border-x border-b-2 p-2 font-bold">{client.organisation_name}</p>
+                <p className="border-x border-b-2 p-2">{getInvoicesTotalPrice(client.invoices, ["DRAFT"])} €</p>
+                <p className="border-x border-b-2 p-2">{getInvoicesTotalPrice(client.invoices, ["SENT"])} €</p>
+                <p className="border-x border-b-2 p-2">{getInvoicesTotalPrice(client.invoices, ["OVERDUE"])} €</p>
+                <p className="border-x border-b-2 p-2">{getInvoicesTotalPrice(client.invoices, ["PAID"])} €</p>
               </Link>
             );
           })}

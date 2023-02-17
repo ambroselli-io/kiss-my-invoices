@@ -77,12 +77,14 @@ const createWindow = async () => {
     show: false,
     width: windowBounds?.width || 800,
     height: windowBounds?.height || 600,
+
     icon: getAssetPath("icon.png"),
     webPreferences: {
       // https://electron-react-boilerplate.js.org/docs/native-modules/
       // nodeIntegration: true,
       // contextIsolation: false,
       // comment below if https://electron-react-boilerplate.js.org/docs/native-modules/
+      devTools: isDebug,
       preload: app.isPackaged ? path.join(__dirname, "preload.js") : path.join(__dirname, "../../.erb/dll/preload.js"),
     },
   });

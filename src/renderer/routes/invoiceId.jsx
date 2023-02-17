@@ -1,7 +1,8 @@
-import { Link, redirect, useFetcher, useLoaderData } from "react-router-dom";
+import { redirect, useFetcher, useLoaderData, useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
 import html2pdf from "html2pdf.js";
 import { useMemo, useRef, useState } from "react";
+import CreatableSelect from "react-select/creatable";
 import { readFile, writeFile } from "renderer/utils/fileManagement";
 import useSetDocumentTitle from "renderer/services/useSetDocumentTitle";
 import OpenInNewWindowIcon from "renderer/components/OpenInNewWindowIcon";
@@ -13,8 +14,9 @@ import {
   getItemPriceWithVat,
 } from "renderer/utils/prices";
 import { getSettings } from "renderer/utils/settings";
-import { getInvoiceName, getInvoiceNumber } from "renderer/utils/invoice";
+import { getInvoiceName, getInvoiceNumber, getNextInvoiceNumber, sortInvoices } from "renderer/utils/invoice";
 import { computeEmailBody, computeEmailSubject } from "renderer/utils/contact";
+import { ButtonsSatus } from "renderer/components/Invoice/ButtonsSatus";
 
 export const loader = async ({ params }) => {
   const settings = await getSettings();
@@ -38,17 +40,26 @@ export const action = async ({ request, params }) => {
     updatedInvoice.client = form.get("client");
   }
   if (form.get("title")) updatedInvoice.title = form.get("title");
+  if (form.get("status")) updatedInvoice.status = form.get("status");
   if (form.get("items")) updatedInvoice.items = JSON.parse(form.get("items"));
   if (form.get("emission_date")) updatedInvoice.emission_date = form.get("emission_date");
   if (form.get("due_date")) updatedInvoice.due_date = form.get("due_date");
   if (form.get("paid_date")) updatedInvoice.paid_date = form.get("paid_date");
   if (form.get("notes")) updatedInvoice.notes = form.get("notes");
 
+  if (params.invoice_number !== updatedInvoice.invoice_number) {
+    if (invoices.find((_invoice) => _invoice.invoice_number === updatedInvoice.invoice_number)) {
+      return { ok: false, error: "Invoice number already exists" };
+    }
+  }
+
   await writeFile(
     "invoices.json",
     params.invoice_number === "new"
-      ? [...invoices, updatedInvoice]
-      : invoices.map((_invoice) => (_invoice.invoice_number === params.invoice_number ? updatedInvoice : _invoice)),
+      ? [...invoices, updatedInvoice].sort(sortInvoices)
+      : invoices
+          .map((_invoice) => (_invoice.invoice_number === params.invoice_number ? updatedInvoice : _invoice))
+          .sort(sortInvoices),
   );
   if (params.invoice_number !== updatedInvoice.invoice_number) {
     return redirect(`/invoice/${updatedInvoice.invoice_number}`);
@@ -82,7 +93,7 @@ function Invoice() {
       emissionDate: defaultEmissionDate,
       settings,
       client,
-      inc: String(invoices.length + 2).padStart(3, "0"),
+      inc: getNextInvoiceNumber(invoices),
     });
     if (!settings.invoice_number_format.includes("CLIENT CODE")) return invoice?.invoice_number || defaultInvoiceNumber;
     if (!client) return invoice?.invoice_number || defaultInvoiceNumber;
@@ -191,6 +202,7 @@ function Invoice() {
               const subject = computeEmailSubject({ settings, client, invoice, me });
 
               window.electron.ipcRenderer.invoke("app:send-email", {
+                from: me.email,
                 to: client.email,
                 cc: client.email_cc,
                 subject,
@@ -204,44 +216,12 @@ function Invoice() {
           </button>
         </div>
       </div>
-      <invoiceFetcher.Form
-        method="POST"
-        className={["flew-wrap my-8 flex items-center justify-center gap-4 print:hidden"].join(" ")}
-      >
-        <input type="hidden" name="invoice_number" defaultValue={invoiceNumber} />
-        {clients.map((_client) => {
-          return (
-            <div
-              key={_client.organisation_number}
-              className={[
-                "flex items-center justify-around rounded border border-gray-800 py-2 px-12 ",
-                client?.organisation_number === _client.organisation_number
-                  ? " bg-gray-800 text-gray-50"
-                  : "bg-transparent text-gray-800",
-              ].join(" ")}
-            >
-              <button
-                type="button"
-                onClick={() => {
-                  const form = new FormData();
-                  console.log("CLICKED", _client.organisation_number);
-                  form.append("client", _client.organisation_number);
-                  form.append("from", "client button");
-                  form.append("invoice_number", invoiceNumber);
-                  form.append("emission_date", defaultEmissionDate.format("YYYY-MM-DD"));
-                  form.append("due_date", defaultDueDate.format("YYYY-MM-DD"));
-                  invoiceFetcher.submit(form, { method: "post" });
-                }}
-              >
-                {_client.organisation_name}
-              </button>
-              <Link className="ml-4" to={`/client/${_client.organisation_number}`}>
-                <OpenInNewWindowIcon className="h-3 w-3" />
-              </Link>
-            </div>
-          );
-        })}
-      </invoiceFetcher.Form>
+      {/* <SelectInvoiceStatus
+        invoiceFetcher={invoiceFetcher}
+        invoiceNumber={invoiceNumber}
+        status={invoice.status || "draft"}
+      /> */}
+      <ButtonsSatus invoice={invoice} invoiceNumber={invoiceNumber} alwaysShowAll />
       <div className={["h-a4 w-a4 m-auto mb-10 max-w-3xl border border-gray-500"].join(" ")}>
         <div
           ref={printableAreaRef}
@@ -320,19 +300,47 @@ function Invoice() {
               <br />
               VAT: {me?.vat_number}
             </p>
-            <p className="text-right">
-              <b>{client?.organisation_name}</b>
-              <br />
-              {client?.address}
-              <br />
-              {client?.zip} {client?.city}
-              <br />
-              {client?.country}
-              <br />
-              {client?.organisation_number_type}: {client?.organisation_number}
-              <br />
-              VAT: {client?.vat_number}
-            </p>
+
+            <div className="text-right">
+              {!isPrinting && (
+                <CreatableSelect
+                  options={clients}
+                  className="min-w-[16rem]"
+                  onChange={(_client) => {
+                    const form = new FormData();
+                    form.append("client", _client.organisation_number);
+                    form.append("from", "client select");
+                    form.append("invoice_number", invoiceNumber);
+                    form.append("emission_date", defaultEmissionDate.format("YYYY-MM-DD"));
+                    form.append("due_date", defaultDueDate.format("YYYY-MM-DD"));
+                    invoiceFetcher.submit(form, { method: "post" });
+                  }}
+                  name="client"
+                  value={client}
+                  getOptionValue={(option) => option.organisation_number}
+                  formatOptionLabel={ClientOption}
+                />
+              )}
+              {client?.organisation_name && (
+                <p className="text-right">
+                  {isPrinting && (
+                    <>
+                      <b>{client?.organisation_name}</b>
+                      <br />
+                    </>
+                  )}
+                  {client?.address}
+                  <br />
+                  {client?.zip} {client?.city}
+                  <br />
+                  {client?.country}
+                  <br />
+                  {client?.organisation_number_type}: {client?.organisation_number}
+                  <br />
+                  VAT: {client?.vat_number}
+                </p>
+              )}
+            </div>
           </div>
           <input
             type="text"
@@ -486,6 +494,57 @@ function Item({ item, index, items, setItems, invoiceNumber, invoiceFetcher, def
       <p className="border-l border-gray-400 py-2 text-center">{formatThousands(getItemPriceWithVat(item))} €</p>
     </invoiceFetcher.Form>
   );
+}
+
+function Client({ client, selected }) {
+  const navigate = useNavigate();
+  return (
+    <div className="flex w-full justify-end items-center">
+      {selected ? <b>{client?.organisation_name}</b> : <span>{client?.organisation_name}</span>}
+      <button
+        type="button"
+        className="ml-4 z-50"
+        onClick={(e) => {
+          e.stopPropagation();
+          navigate(`/client/${client?.organisation_number}`);
+        }}
+      >
+        <OpenInNewWindowIcon className="h-3 w-3" />
+      </button>
+    </div>
+  );
+}
+
+function CreateClient({ name }) {
+  const navigate = useNavigate();
+  return (
+    <button
+      type="button"
+      className="z-50"
+      onClick={(e) => {
+        e.stopPropagation();
+        window?.localStorage?.setItem("client", JSON.stringify({ organisation_name: name }));
+        navigate("/client/new");
+      }}
+    >
+      Create new client &quot;{name}&quot;
+    </button>
+  );
+}
+
+function ClientOption(_client, options) {
+  // eslint-disable-next-line react/destructuring-assignment
+  if (options.context === "menu") {
+    // eslint-disable-next-line react/destructuring-assignment
+    if (_client.__isNew__) {
+      return <CreateClient name={_client?.value} />;
+    }
+    return <Client client={_client} />;
+  }
+  if (_client?.__isNew__) {
+    return <span>Création de {_client?.name}...</span>;
+  }
+  return <Client client={_client} selected />;
 }
 
 export default Invoice;

@@ -92,6 +92,13 @@ export default class MenuBuilder {
       label: "View",
       submenu: [
         {
+          label: "Back",
+          accelerator: "Command+[",
+          click: () => {
+            this.mainWindow.webContents.goBack();
+          },
+        },
+        {
           label: "Reload",
           accelerator: "Command+R",
           click: () => {

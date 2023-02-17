@@ -1,96 +1,118 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
+import { useFetcher } from "react-router-dom";
 
-export const ButtonsSatus = ({ feature, name = "status", featureFetcher, form, className = "" }) => {
+export function ButtonsSatus({ invoice, invoiceNumber, className = "", alwaysShowAll = false }) {
+  const statusFetcher = useFetcher();
+
   const selected = useMemo(() => {
-    if (feature.status === "__new") return "NOTREADYYET";
-    if (["loading", "submitting"].includes(featureFetcher.state)) {
-      if (featureFetcher.submission.formData?.get("featureId") !== feature._id) return feature[name];
-      const newValue = featureFetcher.submission.formData?.get(name);
-      if (newValue) {
-        if (newValue === feature[name]) return "";
-        return newValue;
-      }
+    if (!invoice?.status) return "DRAFT";
+    if (["loading", "submitting"].includes(statusFetcher.state)) {
+      if (statusFetcher.formData?.get("invoice_number") !== invoiceNumber) return invoice.status;
+      const newValue = statusFetcher.formData?.get("status");
+      if (newValue) return newValue;
     }
-    return feature[name];
-  }, [feature, name, featureFetcher]);
+    return invoice?.status;
+  }, [invoice?.status, statusFetcher.formData, statusFetcher.state, invoiceNumber]);
+
+  const [showAll, setShowAll] = useState(alwaysShowAll);
 
   return (
-    <div className={["flex flex-wrap items-center gap-1 p-1", className].join(" ")}>
+    <statusFetcher.Form
+      className={["flex flex-wrap items-center justify-center gap-1 p-1", className].filter(Boolean).join(" ")}
+      method="POST"
+      action={`/invoice/${invoiceNumber}`}
+      onSubmit={(e) => {
+        if (alwaysShowAll) return;
+        console.log(invoice.status === e.nativeEvent.submitter.value);
+        setShowAll(invoice.status === e.nativeEvent.submitter.value);
+      }}
+    >
+      <input type="hidden" name="invoice_number" defaultValue={invoiceNumber} />
       <button
         className={[
-          selected === "TODO" ? "bg-blue-700 text-white" : "",
+          selected === "DRAFT" && "!bg-blue-700 !text-white",
           "active:!bg-blue-700 active:!text-white",
           "rounded-full border-2 border-blue-700 px-6",
-          selected === "" ? "border-opacity-40 bg-blue-200 bg-opacity-40 text-blue-700 text-opacity-40" : "",
-          !["", "TODO"].includes(selected) ? "hidden" : "",
-        ].join(" ")}
-        name={name}
+          (showAll || selected === "") && "border-opacity-40 bg-blue-200 bg-opacity-40 text-blue-700 text-opacity-40",
+          !showAll && !["", "DRAFT"].includes(selected) && "hidden",
+        ]
+          .filter(Boolean)
+          .join(" ")}
+        name="status"
+        disabled={!invoice?.invoice_number}
         type="submit"
-        form={form}
-        value="TODO"
+        value="DRAFT"
       >
-        To do
+        Draft
       </button>
       <button
         className={[
-          selected === "INPROGRESS" ? "bg-yellow-300 text-white" : "",
+          selected === "SENT" && "!bg-yellow-300 !text-white",
           "active:!bg-yellow-300 active:!text-white",
           "rounded-full border-2 border-yellow-400 px-6",
-          selected === "" ? "border-opacity-40 bg-yellow-100 bg-opacity-40 text-gray-500 text-opacity-40" : "",
-          !["", "INPROGRESS"].includes(selected) ? "hidden" : "",
-        ].join(" ")}
-        name={name}
+          (showAll || selected === "") && "border-opacity-40 bg-yellow-100 bg-opacity-40 text-gray-500 text-opacity-40",
+          !showAll && !["", "SENT"].includes(selected) && "hidden",
+        ]
+          .filter(Boolean)
+          .join(" ")}
+        name="status"
+        disabled={!invoice?.invoice_number}
         type="submit"
-        form={form}
-        value="INPROGRESS"
+        value="SENT"
       >
-        In progress
+        Sent
       </button>
       <button
         className={[
-          selected === "NOTREADYYET" ? "bg-red-500 text-white" : "",
+          selected === "OVERDUE" && "!bg-red-500 !text-white",
           "active:!bg-red-500 active:!text-white",
           "rounded-full border-2 border-red-500 px-6",
-          selected === "" ? "border-opacity-40 bg-red-200 bg-opacity-40 text-red-700 text-opacity-40" : "",
-          !["", "NOTREADYYET"].includes(selected) ? "hidden" : "",
-        ].join(" ")}
-        name={name}
+          (showAll || selected === "") && "border-opacity-40 bg-red-200 bg-opacity-40 text-red-700 text-opacity-40",
+          !showAll && !["", "OVERDUE"].includes(selected) && "hidden",
+        ]
+          .filter(Boolean)
+          .join(" ")}
+        name="status"
+        disabled={!invoice?.invoice_number}
         type="submit"
-        form={form}
-        value="NOTREADYYET"
+        value="OVERDUE"
       >
-        Not ready yet
+        Overdue
       </button>
       <button
         className={[
-          selected === "DONE" ? "bg-green-700 text-white" : "",
+          selected === "PAID" && "!bg-green-700 !text-white",
           "active:!bg-green-700 active:!text-white",
           "rounded-full border-2 border-green-700 px-6",
-          selected === "" ? "border-opacity-40 bg-green-200 bg-opacity-40 text-green-700 text-opacity-40" : "",
-          !["", "DONE"].includes(selected) ? "hidden" : "",
-        ].join(" ")}
-        name={name}
+          (showAll || selected === "") && "border-opacity-40 bg-green-200 bg-opacity-40 text-green-700 text-opacity-40",
+          !showAll && !["", "PAID"].includes(selected) && "hidden",
+        ]
+          .filter(Boolean)
+          .join(" ")}
+        name="status"
+        disabled={!invoice?.invoice_number}
         type="submit"
-        form={form}
-        value="DONE"
+        value="PAID"
       >
-        Done
+        💋 Paid
       </button>
       <button
         className={[
-          selected === "KO" ? "bg-gray-900 text-white" : "",
+          selected === "CANCELED" && "!bg-gray-900 !text-white",
           "active:!bg-gray-900 active:!text-white",
           "rounded-full border-2 border-gray-900 px-6",
-          selected === "" ? "border-opacity-40 bg-white bg-opacity-40 text-gray-900 text-opacity-40" : "",
-          !["", "KO"].includes(selected) ? "hidden" : "",
-        ].join(" ")}
-        name={name}
+          (showAll || selected === "") && "border-opacity-40 bg-white bg-opacity-40 text-gray-900 text-opacity-40",
+          !showAll && !["", "CANCELED"].includes(selected) && "hidden",
+        ]
+          .filter(Boolean)
+          .join(" ")}
+        name="status"
+        disabled={!invoice?.invoice_number}
         type="submit"
-        form={form}
-        value="KO"
+        value="CANCELED"
       >
-        KO
+        CANCELED
       </button>
-    </div>
+    </statusFetcher.Form>
   );
-};
+}

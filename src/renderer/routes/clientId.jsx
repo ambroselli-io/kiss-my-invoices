@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Form, useLoaderData } from "react-router-dom";
+import { Form, redirect, useLoaderData } from "react-router-dom";
 import useSetDocumentTitle from "renderer/services/useSetDocumentTitle";
 import { readFile, writeFile } from "renderer/utils/fileManagement";
 
@@ -19,10 +19,13 @@ export const action = async ({ request, params }) => {
   }
   await writeFile(
     "clients.json",
-    params === "new"
+    params.clientId === "new"
       ? [...clients, updatedClient]
       : clients.map((_client) => (_client.organisation_number === params.clientId ? updatedClient : _client)),
   );
+  if (params.clientId !== updatedClient.organisation_number) {
+    return redirect(`/client/${updatedClient.organisation_number}`);
+  }
   return { ok: true };
 };
 
@@ -59,7 +62,7 @@ function Client() {
       }}
     >
       <div className="my-12 flex items-center justify-between px-12">
-        <h1 className="text-3xl font-bold">Client</h1>
+        <h1 className="text-3xl font-bold">{defaultValues.organisation_name || "Client"}</h1>
         <div className="flex items-center gap-4">
           <button
             disabled={saveDisabled}
@@ -80,6 +83,7 @@ function Client() {
               id="organisation_name"
               className="outline-main block w-full rounded border border-black bg-transparent p-2.5 text-black transition-all"
               placeholder="Froadmaps"
+              required
               defaultValue={defaultValues.organisation_name}
               key={defaultValues.organisation_name}
             />
@@ -104,6 +108,7 @@ function Client() {
               id="organisation_number_type"
               className="outline-main block w-full rounded border border-black bg-transparent p-2.5 text-black transition-all"
               placeholder="SIRET - KvK - ..."
+              required
               defaultValue={defaultValues.organisation_number_type}
               key={defaultValues.organisation_number_type}
             />

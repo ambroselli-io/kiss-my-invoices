@@ -11,16 +11,11 @@ ipcMain.handle("app:save-pdf", async (_event, pdfData, filePathAndName) => {
 
 ipcMain.handle("app:send-email", async (_event, { to, cc, subject, body, filePathAndName }) => {
   const escapedSubject = subject.replace(/"/g, '\\"');
-
   const escapedBody = body
     .replace(/"/g, '\\"')
     .replace(/(\r\n|\n|\r)/gm, "\\n")
     .replace(/'/g, "\u2019");
   const escapedFilePath = filePathAndName.replace(/"/g, '\\"');
-
-  // replace diacritics in body
-
-  console.log({ escapedBody });
 
   const appleScript = `osascript -e 'tell application "Mail"
   set newMessage to make new outgoing message with properties {subject:"${escapedSubject}", content:"${escapedBody}", visible:true}
@@ -31,10 +26,10 @@ ipcMain.handle("app:send-email", async (_event, { to, cc, subject, body, filePat
     tell content
       make new attachment with properties {file name:theAttachment} at after the last word of the last paragraph
     end tell
+    set sender to "arnaud@ambroselli.io"
   end tell
-end tell'`;
-
-  console.log({ appleScript });
+end tell
+tell application "Mail" to activate'`;
 
   exec(appleScript, (error, stdout, stderr) => {
     if (error) {

@@ -1,5 +1,19 @@
 import dayjs from "dayjs";
 
+export const sortInvoices = (a, b) => {
+  // sort only by incremental number
+  const aInc = parseInt(a.invoice_number.split("-").pop(), 10);
+  const bInc = parseInt(b.invoice_number.split("-").pop(), 10);
+  return aInc - bInc;
+};
+
+export const getNextInvoiceNumber = (invoices) => {
+  const lastInvoice = invoices[invoices.length - 1];
+  const lastInc = parseInt(lastInvoice.invoice_number.split("-").pop(), 10);
+  const nextInc = lastInc + 1;
+  return String(nextInc).padStart(3, "0");
+};
+
 export const getInvoiceName = ({ invoice, me, client, settings }) => {
   const template = settings.invoice_file_name;
   const templateWithPDFExtension = template.endsWith(".pdf") ? template : `${template}.pdf`;

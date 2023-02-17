@@ -20,3 +20,10 @@ export const getTotalPrice = (items = []) =>
 export const getFormattedTotalVAT = (items = []) => formatThousands(getTotalPrice(items) - getTotalPretaxPrice(items));
 export const getFormattedTotalPretaxPrice = (items = []) => formatThousands(getTotalPretaxPrice(items));
 export const getFormattedTotalPrice = (items = []) => formatThousands(getTotalPrice(items));
+
+export const getInvoicesTotalPrice = (invoices = [], statuses = []) => {
+  const filteredInvoices =
+    statuses.length === 0 ? invoices : invoices.filter((invoice) => statuses.includes(invoice.status));
+  const totalInvoiced = filteredInvoices.reduce((total, invoice) => total + getTotalPrice(invoice.items), 0);
+  return formatThousands(totalInvoiced);
+};

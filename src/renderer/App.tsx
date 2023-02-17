@@ -86,6 +86,16 @@ function Root() {
   );
 }
 
+// TS an ErrorBoundary component with error as only prop
+function ErrorBoundary({ error }: { error: Error }) {
+  console.error(error);
+  return (
+    <pre>
+      <code>{error?.message}</code>
+    </pre>
+  );
+}
+
 const router = createHashRouter(
   [
     {
@@ -97,6 +107,7 @@ const router = createHashRouter(
           element: <Home />,
           loader: homeLoader,
           index: true,
+          errorElement: <ErrorBoundary />,
         },
         {
           path: "me",
@@ -115,7 +126,6 @@ const router = createHashRouter(
           element: <Invoice />,
           loader: invoiceLoader,
           action: invoiceAction,
-          errorElement: <div>Invoice not found</div>,
         },
         {
           path: "/client",

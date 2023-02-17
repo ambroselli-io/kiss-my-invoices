@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 
-export const DropdownMenu = ({ children, title, className, closeOnItemClick, id }) => {
+export function DropdownMenu({ children, title, className, closeOnItemClick, id }) {
   const [showMenu, setOpenMenu] = useState(false);
 
   useEffect(() => {
@@ -43,4 +43,4 @@ export const DropdownMenu = ({ children, title, className, closeOnItemClick, id 
       )}
     </div>
   );
-};
+}

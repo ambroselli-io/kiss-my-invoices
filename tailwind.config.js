@@ -7,7 +7,9 @@ module.exports = {
         retina: "300dpi",
       },
       gridTemplateColumns: {
-        invoices: "minmax(0, 3fr) minmax(0, 10fr) minmax(0, 7fr) repeat(4, minmax(0, 3fr))",
+        // invoices: "minmax(0, 3fr) minmax(0, 10fr) minmax(0, 7fr) repeat(4, minmax(0, 3fr))",
+        invoices: "minmax(0, 3fr) minmax(0, 10fr) minmax(0, 7fr) repeat(3, minmax(0, 3fr))",
+        clients: "minmax(0, 6fr) repeat(4, minmax(0, 4fr))",
         invoice: "2rem minmax(0, 10fr) repeat(4, minmax(0, 4fr))",
       },
       colors: {
