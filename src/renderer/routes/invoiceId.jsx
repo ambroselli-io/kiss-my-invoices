@@ -7,7 +7,8 @@ import { readFile, writeFile } from "renderer/utils/fileManagement";
 import useSetDocumentTitle from "renderer/services/useSetDocumentTitle";
 import OpenInNewWindowIcon from "renderer/components/OpenInNewWindowIcon";
 import {
-  formatThousands,
+  formatToCurrency,
+  getCurrencySymbol,
   getFormattedTotalPretaxPrice,
   getFormattedTotalPrice,
   getFormattedTotalVAT,
@@ -21,6 +22,7 @@ import { ButtonsSatus } from "renderer/components/Invoice/ButtonsSatus";
 export const loader = async ({ params }) => {
   const settings = await getSettings();
   const me = await readFile("me.json", { default: {} });
+  window.countryCode = me?.country_code;
   const clients = await readFile("clients.json", { default: [] });
   const invoices = await readFile("invoices.json", { default: [] });
   const invoice =
@@ -105,7 +107,7 @@ function Invoice() {
       return defaultInvoiceNumber;
     }
     return invoice?.invoice_number || defaultInvoiceNumber;
-  }, [invoice?.invoice_number, defaultEmissionDate, settings, client, invoices.length]);
+  }, [defaultEmissionDate, settings, client, invoices, invoice?.invoice_number]);
 
   useSetDocumentTitle(
     `Invoice ${invoiceNumber}${client?.organisation_name ? ` - ${client?.organisation_name}` : ""} - ${dayjs(
@@ -150,7 +152,7 @@ function Invoice() {
   return (
     <div
       className={[
-        "border-80 h-full w-full overflow-auto print:overflow-hidden",
+        "border-80 h-full w-full overflow-auto print:overflow-hidden bg-amber-100",
         isPrinting ? "!overflow-hidden" : "",
       ].join(" ")}
     >
@@ -158,7 +160,7 @@ function Invoice() {
         <h1 className="text-3xl font-bold">Invoice</h1>
         <div className="flex items-center gap-4">
           <button
-            className="rounded border py-2 px-12"
+            className="rounded border py-2 px-12 bg-white"
             type="button"
             onClick={() => {
               if (typeof window !== "undefined") {
@@ -169,7 +171,7 @@ function Invoice() {
             🖨️ Print
           </button>
           <button
-            className="rounded border py-2 px-12"
+            className="rounded border py-2 px-12 bg-white"
             type="button"
             title="It will export the invoice as PDF in the location of your choice."
             onClick={() => generatePdf()}
@@ -177,7 +179,7 @@ function Invoice() {
             Export as PDF
           </button>
           <button
-            className="rounded border py-2 px-12"
+            className="rounded border py-2 px-12 bg-black text-white"
             type="button"
             onClick={async () => {
               const pdfData = await generatePdf(settings.invoices_folder_path);
@@ -216,13 +218,8 @@ function Invoice() {
           </button>
         </div>
       </div>
-      {/* <SelectInvoiceStatus
-        invoiceFetcher={invoiceFetcher}
-        invoiceNumber={invoiceNumber}
-        status={invoice.status || "draft"}
-      /> */}
       <ButtonsSatus invoice={invoice} invoiceNumber={invoiceNumber} alwaysShowAll />
-      <div className={["h-a4 w-a4 m-auto mb-10 max-w-3xl border border-gray-500"].join(" ")}>
+      <div className={["h-a4 w-a4 m-auto mb-10 mt-2 max-w-3xl border-2 border-gray-500 bg-white"].join(" ")}>
         <div
           ref={printableAreaRef}
           className="h-a4 w-a4 max-w-3xl text-base text-gray-600 overflow-hidden flex flex-col p-8"
@@ -362,22 +359,19 @@ function Invoice() {
           <div className="grid grid-cols-invoice overflow-hidden border border-gray-400 bg-gray-300">
             <div />
             <p className="flex h-full items-center">Item</p>
-            <p className="border-l border-gray-400 text-center">Quantity (days)</p>
+            <p className="border-l border-gray-400 flex h-full justify-center items-center">Quantity</p>
+            <p className="border-l border-gray-400 flex h-full justify-center items-center">Unit</p>
             <p className="border-l border-gray-400 text-center">
-              Pre-tax price
+              Pre-tax
               <br />
-              (€)
+              unit price ({getCurrencySymbol(me.country_code)})
             </p>
             <p className="border-l border-gray-400 text-center">
               VAT
               <br />
               (%)
             </p>
-            <p className="border-l border-gray-400 text-center">
-              Price
-              <br />
-              (€)
-            </p>
+            <p className="border-l border-gray-400 flex h-full justify-center items-center">Price</p>
           </div>
           {items?.map((item, index) => {
             return (
@@ -395,12 +389,12 @@ function Invoice() {
             );
           })}
           <div className="mt-2 grid grid-cols-invoice  border border-transparent">
-            <p className="col-start-5 text-right">Pre-tax total:</p>
-            <p className="text-center">{getFormattedTotalPretaxPrice(items)} €</p>
+            <p className="col-start-5 col-span-2 text-right">Pre-tax total:</p>
+            <p className="text-right pr-3">{getFormattedTotalPretaxPrice(items)}</p>
           </div>
           <div className="mt-2 grid grid-cols-invoice  border border-transparent">
             <button
-              className={["col-span-2 print:hidden", isPrinting ? "!hidden" : ""].join(" ")}
+              className={["col-span-2 rounded border px-4 print:hidden", isPrinting ? "!hidden" : ""].join(" ")}
               type="button"
               onClick={() => {
                 setItems([...items, defaultItem]);
@@ -408,12 +402,12 @@ function Invoice() {
             >
               Add an item
             </button>
-            <p className="col-start-5 text-right">VAT:</p>
-            <p className="text-center">{getFormattedTotalVAT(items)} €</p>
+            <p className="col-start-5 col-span-2 text-right">VAT:</p>
+            <p className="text-right pr-3">{getFormattedTotalVAT(items)}</p>
           </div>
           <div className="mt-2 grid grid-cols-invoice  border border-transparent font-bold">
-            <p className="col-start-5 text-right">To pay:</p>
-            <p className="text-center">{getFormattedTotalPrice(items)} €</p>
+            <p className="col-start-5 col-span-2 text-right">To pay:</p>
+            <p className="text-right pr-3">{getFormattedTotalPrice(items)}</p>
           </div>
           <div className="mt-auto flex justify-start gap-4">
             <p>Payment details:</p>
@@ -466,7 +460,7 @@ function Item({ item, index, items, setItems, invoiceNumber, invoiceFetcher, def
       }}
     >
       <input type="hidden" name="invoice_number" defaultValue={invoiceNumber} />
-      <p className="py-2">{index + 1} - </p>
+      <p className="py-2 pl-1">{index + 1} - </p>
       <input
         className="border-none py-2"
         type="text"
@@ -474,12 +468,17 @@ function Item({ item, index, items, setItems, invoiceNumber, invoiceFetcher, def
         name="title"
         defaultValue={item.title}
       />
-
       <input
         className="border-l border-gray-400 py-2 text-center"
         type="number"
         name="quantity"
         defaultValue={item.quantity}
+      />
+      <input
+        className="border-l border-gray-400 py-2 text-center"
+        type="text"
+        name="unit"
+        defaultValue={item.unit || "day"}
       />
 
       <input
@@ -491,7 +490,7 @@ function Item({ item, index, items, setItems, invoiceNumber, invoiceFetcher, def
       />
 
       <input className="border-l border-gray-400 py-2 text-center" type="number" name="vat" defaultValue={item.vat} />
-      <p className="border-l border-gray-400 py-2 text-center">{formatThousands(getItemPriceWithVat(item))} €</p>
+      <p className="border-l border-gray-400 py-2 text-right pr-4">{formatToCurrency(getItemPriceWithVat(item))}</p>
     </invoiceFetcher.Form>
   );
 }

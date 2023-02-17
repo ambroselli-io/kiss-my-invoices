@@ -1,6 +1,8 @@
 import { useRef, useState } from "react";
 import { Form, useLoaderData } from "react-router-dom";
 import { readFile, writeFile } from "renderer/utils/fileManagement";
+import { countries } from "renderer/utils/countries";
+import Select from "react-select";
 
 export const loader = async () => {
   const me = await readFile("me.json", { default: {} });
@@ -9,8 +11,16 @@ export const loader = async () => {
 
 export const action = async ({ request }) => {
   const me = await readFile("me.json");
+  window.countryCode = me?.country_code;
   const updatedMe = Object.fromEntries(await request.formData());
+  if (updatedMe?.country_code?.length && !countries.find((c) => c.code === updatedMe.country_code)) {
+    return window.electron.ipcRenderer.invoke(
+      "dialog:showMessageBoxSync",
+      "This country code doesn't exist. Please check https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2#Officially_assigned_code_elements to find yours.",
+    );
+  }
   await writeFile("me.json", { ...me, ...updatedMe });
+
   return { ok: true };
 };
 
@@ -24,8 +34,9 @@ function Me() {
 
   return (
     <Form
-      className="flex h-full w-full flex-col"
+      className="flex h-full w-full flex-col bg-green-200"
       method="post"
+      form="me"
       onChange={(e) => {
         const json = Object.fromEntries(new FormData(e.currentTarget));
         if (typeof window !== "undefined") {
@@ -53,7 +64,7 @@ function Me() {
           </button>
         </div>
       </div>
-      <div className="flex flex-wrap">
+      <div className="flex flex-wrap bg-white border-y-2">
         <div className="flex min-w-md grow basis-1/3 flex-col gap-4 p-4">
           <div className="mb-3 flex max-w-lg flex-col-reverse gap-2">
             <input
@@ -106,7 +117,7 @@ function Me() {
               name="address"
               id="address"
               className="outline-main block w-full rounded border border-black bg-transparent p-2.5 text-black transition-all"
-              placeholder="1234 Main St"
+              placeholder="1, avenue des Champs Elysées"
               defaultValue={defaultValues.current.address}
             />
             <label htmlFor="address">Address</label>
@@ -117,7 +128,7 @@ function Me() {
               type="text"
               id="city"
               className="outline-main block w-full rounded border border-black bg-transparent p-2.5 text-black transition-all"
-              placeholder="San Francisco"
+              placeholder="Paris"
               defaultValue={defaultValues.current.city}
             />
             <label htmlFor="city">City</label>
@@ -128,22 +139,48 @@ function Me() {
               type="text"
               id="zip"
               className="outline-main block w-full rounded border border-black bg-transparent p-2.5 text-black transition-all"
-              placeholder="1015JJ"
+              placeholder="75018"
               defaultValue={defaultValues.current.zip}
             />
             <label htmlFor="zip">Zip</label>
           </div>
           <div className="mb-3 flex max-w-lg flex-col-reverse gap-2">
-            <input
+            {/* <input
               name="country"
               type="text"
               id="country"
               className="outline-main block w-full rounded border border-black bg-transparent p-2.5 text-black transition-all"
-              placeholder="United States"
+              placeholder="France"
               defaultValue={defaultValues.current.country}
+            /> */}
+            <Select
+              options={countries}
+              className="outline-main block w-full py-1 rounded bg-transparent text-black transition-all [&_*]:!border-black"
+              name="country_code"
+              defaultInputValue={countries.find((c) => c.code === me.country_code)?.country}
+              getOptionValue={(option) => option.code}
+              getOptionLabel={(option) => option.country}
+              form="me"
+              onChange={() => {
+                setSaveDisabled(false);
+              }}
+              // formatOptionLabel={ClientOption}
             />
             <label htmlFor="country">Country</label>
+            {/* iso-3166-1-alpha-2 */}
           </div>
+
+          {/* <div className="mb-3 flex max-w-lg flex-col-reverse gap-2">
+            <input
+              name="country_code"
+              type="text"
+              id="country_code"
+              className="outline-main block w-full rounded border border-black bg-transparent p-2.5 text-black transition-all"
+              placeholder="FR"
+              defaultValue={defaultValues.current.country_code}
+            />
+            <label htmlFor="country">Country code</label>
+          </div> */}
         </div>
         <div className="flex min-w-md grow basis-1/3 flex-col gap-4 p-4">
           <div className="mb-3 flex max-w-lg flex-col-reverse gap-2">

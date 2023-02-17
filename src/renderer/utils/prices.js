@@ -1,3 +1,5 @@
+import { countries } from "./countries";
+
 const getItemPrice =
   (considerVat = true) =>
   (item) => {
@@ -8,22 +10,32 @@ const getItemPrice =
 
 export const getItemPriceWithNoVat = getItemPrice(false);
 export const getItemPriceWithVat = getItemPrice(true);
+export const getCurrencySymbol = () => {
+  const currency = countries.find((c) => c.code === window.countryCode)?.currency;
+  const options = { style: "currency", currency };
+  const parts = new Intl.NumberFormat(window.countryCode, options).formatToParts(1);
+  const currencySymbol = parts.find((part) => part.type === "currency").value;
+  return currencySymbol;
+};
 
-export const formatThousands = (number) => {
-  return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+export const formatToCurrency = (number) => {
+  const currency = countries.find((c) => c.code === window.countryCode)?.currency;
+  return Intl.NumberFormat(window.countryCode, { style: "currency", currency, minimumSignificantDigits: 1 }).format(
+    number,
+  );
 };
 
 export const getTotalPretaxPrice = (items = []) =>
   items.map(getItemPriceWithNoVat).reduce((total, price) => price + total, 0);
 export const getTotalPrice = (items = []) =>
   items.map(getItemPriceWithNoVat).reduce((total, price) => price + total, 0);
-export const getFormattedTotalVAT = (items = []) => formatThousands(getTotalPrice(items) - getTotalPretaxPrice(items));
-export const getFormattedTotalPretaxPrice = (items = []) => formatThousands(getTotalPretaxPrice(items));
-export const getFormattedTotalPrice = (items = []) => formatThousands(getTotalPrice(items));
+export const getFormattedTotalVAT = (items = []) => formatToCurrency(getTotalPrice(items) - getTotalPretaxPrice(items));
+export const getFormattedTotalPretaxPrice = (items = []) => formatToCurrency(getTotalPretaxPrice(items));
+export const getFormattedTotalPrice = (items = []) => formatToCurrency(getTotalPrice(items));
 
 export const getInvoicesTotalPrice = (invoices = [], statuses = []) => {
   const filteredInvoices =
     statuses.length === 0 ? invoices : invoices.filter((invoice) => statuses.includes(invoice.status));
   const totalInvoiced = filteredInvoices.reduce((total, invoice) => total + getTotalPrice(invoice.items), 0);
-  return formatThousands(totalInvoiced);
+  return formatToCurrency(totalInvoiced);
 };

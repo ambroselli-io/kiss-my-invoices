@@ -33,7 +33,7 @@ export function ButtonsSatus({ invoice, invoiceNumber, className = "", alwaysSho
           selected === "DRAFT" && "!bg-blue-700 !text-white",
           "active:!bg-blue-700 active:!text-white",
           "rounded-full border-2 border-blue-700 px-6",
-          (showAll || selected === "") && "border-opacity-40 bg-blue-200 bg-opacity-40 text-blue-700 text-opacity-40",
+          (showAll || selected === "") && "bg-blue-50 opacity-100 text-blue-700",
           !showAll && !["", "DRAFT"].includes(selected) && "hidden",
         ]
           .filter(Boolean)
@@ -50,7 +50,7 @@ export function ButtonsSatus({ invoice, invoiceNumber, className = "", alwaysSho
           selected === "SENT" && "!bg-yellow-300 !text-white",
           "active:!bg-yellow-300 active:!text-white",
           "rounded-full border-2 border-yellow-400 px-6",
-          (showAll || selected === "") && "border-opacity-40 bg-yellow-100 bg-opacity-40 text-gray-500 text-opacity-40",
+          (showAll || selected === "") && "bg-yellow-50 opacity-100 text-gray-500",
           !showAll && !["", "SENT"].includes(selected) && "hidden",
         ]
           .filter(Boolean)
@@ -67,7 +67,7 @@ export function ButtonsSatus({ invoice, invoiceNumber, className = "", alwaysSho
           selected === "OVERDUE" && "!bg-red-500 !text-white",
           "active:!bg-red-500 active:!text-white",
           "rounded-full border-2 border-red-500 px-6",
-          (showAll || selected === "") && "border-opacity-40 bg-red-200 bg-opacity-40 text-red-700 text-opacity-40",
+          (showAll || selected === "") && "bg-red-50 opacity-100 text-red-700",
           !showAll && !["", "OVERDUE"].includes(selected) && "hidden",
         ]
           .filter(Boolean)
@@ -84,7 +84,7 @@ export function ButtonsSatus({ invoice, invoiceNumber, className = "", alwaysSho
           selected === "PAID" && "!bg-green-700 !text-white",
           "active:!bg-green-700 active:!text-white",
           "rounded-full border-2 border-green-700 px-6",
-          (showAll || selected === "") && "border-opacity-40 bg-green-200 bg-opacity-40 text-green-700 text-opacity-40",
+          (showAll || selected === "") && "bg-green-50 opacity-100 text-green-700",
           !showAll && !["", "PAID"].includes(selected) && "hidden",
         ]
           .filter(Boolean)
@@ -101,7 +101,7 @@ export function ButtonsSatus({ invoice, invoiceNumber, className = "", alwaysSho
           selected === "CANCELED" && "!bg-gray-900 !text-white",
           "active:!bg-gray-900 active:!text-white",
           "rounded-full border-2 border-gray-900 px-6",
-          (showAll || selected === "") && "border-opacity-40 bg-white bg-opacity-40 text-gray-900 text-opacity-40",
+          (showAll || selected === "") && "bg-gray-50 opacity-100 text-gray-900",
           !showAll && !["", "CANCELED"].includes(selected) && "hidden",
         ]
           .filter(Boolean)

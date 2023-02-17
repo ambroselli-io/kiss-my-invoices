@@ -27,6 +27,9 @@ function Root() {
   const isInvoice = matches[1]?.pathname?.match(/^\/invoice\/.+/);
   const invoice_number = isInvoice && isInvoice[0].replace("/invoice/", "");
 
+  // const isClient = matches[1]?.pathname?.match(/^\/client\/.+/);
+  // const clientNumber = isClient && isClient[0].replace("/client/", "");
+
   const isSettings = matches[1]?.pathname === "/settings";
   const showSettingsError = !!invoices_folder_path_error || (!isSettings && !invoices_folder_path);
 
@@ -46,10 +49,15 @@ function Root() {
           <span className="kiss invisible mr-2">💋</span>My clients
         </NavLink>
         {!!invoice_number && (
-          <NavLink to="client" className="px-5 py-2">
+          <NavLink to="invoice" className="px-5 py-2">
             <span className="mr-2">💋</span>Invoice {invoice_number}
           </NavLink>
         )}
+        {/* {!!clientNumber && (
+          <NavLink to={`/client/${clientNumber}`} className="px-5 py-2">
+            <span className="mr-2">💋</span>Client {clientNumber}
+          </NavLink>
+        )} */}
       </div>
       {showSettingsError && (
         <div className="w-full p-4">

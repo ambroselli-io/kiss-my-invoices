@@ -38,7 +38,7 @@ function Settings() {
 
   return (
     <Form
-      className="flex h-full w-full flex-col"
+      className="flex h-full w-full flex-col bg-orange-200"
       method="post"
       onChange={(e) => {
         const json = Object.fromEntries(new FormData(e.currentTarget));
@@ -66,7 +66,7 @@ function Settings() {
           </button>
         </div>
       </div>
-      <div className="flex flex-wrap">
+      <div className="flex flex-wrap bg-white border-y-2">
         <fieldset className="flex min-w-md grow basis-1/2 flex-col gap-4 p-4">
           <h2 className="text-lg font-semibold">Global settings</h2>
           <div className="mb-3 flex max-w-screen-lg flex-col-reverse gap-2">

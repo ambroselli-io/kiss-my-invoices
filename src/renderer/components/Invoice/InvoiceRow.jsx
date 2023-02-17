@@ -33,10 +33,10 @@ export function InvoiceRow({ invoice, className }) {
       <GoToInvoiceOnClick invoice={invoice} className="border-x border-b-2 p-2">
         {invoice.emission_date}
       </GoToInvoiceOnClick>
-      {/* <GoToInvoiceOnClick invoice={invoice} className="border-x border-b-2 p-2">{getFormattedTotalPretaxPrice(invoice.items)} €</GoToInvoiceOnClick> */}
-      {/* <GoToInvoiceOnClick invoice={invoice} className="border-x border-b-2 p-2">{getFormattedTotalVAT(invoice.items)} €</GoToInvoiceOnClick> */}
+      {/* <GoToInvoiceOnClick invoice={invoice} className="border-x border-b-2 p-2">{getFormattedTotalPretaxPrice(invoice.items)}</GoToInvoiceOnClick> */}
+      {/* <GoToInvoiceOnClick invoice={invoice} className="border-x border-b-2 p-2">{getFormattedTotalVAT(invoice.items)}</GoToInvoiceOnClick> */}
       <GoToInvoiceOnClick invoice={invoice} className="border-x border-b-2 p-2">
-        {getFormattedTotalPrice(invoice.items)} €
+        {getFormattedTotalPrice(invoice.items)}
       </GoToInvoiceOnClick>
       <div className="border-x border-b-2 p-2">
         <ButtonsSatus invoice={invoice} invoiceNumber={invoice.invoice_number} />

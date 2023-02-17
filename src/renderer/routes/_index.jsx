@@ -7,7 +7,7 @@ export const loader = async () => {
   const me = await readFile("me.json", { default: {} });
   const invoices = await readFile("invoices.json", { default: [] });
   const clients = await readFile("clients.json", { default: [] });
-
+  window.countryCode = me?.country_code;
   return {
     me,
     invoices: invoices.map((invoice) => ({
@@ -29,7 +29,7 @@ function Home() {
   useSetDocumentTitle(`Invoices ${me?.organisation_name} | 💋 Kiss my Invoices`);
 
   return (
-    <div className="flex h-full w-full flex-col">
+    <div className="flex h-full w-full flex-col bg-amber-100">
       <div className="my-12 flex items-center justify-between px-12 print:hidden">
         <h1 className="text-3xl font-bold">Invoices {me?.organisation_name}</h1>
         <div className="flex items-center gap-4">
@@ -41,8 +41,8 @@ function Home() {
           </Link>
         </div>
       </div>
-      <main className="flex flex-1 basis-full flex-col justify-start pb-4 text-xs md:pb-8">
-        <div className="relative w-full max-w-full">
+      <main className="flex flex-1 basis-full flex-col justify-start pb-4 text-xs md:pb-8 ">
+        <div className="relative w-full max-w-full bg-white">
           <div
             aria-roledescription="Header of the list of features - Clicking on a column header can sort the invoice by the column, ascending or descending"
             className="grid-cols-invoices sticky top-0 z-50 hidden md:grid"

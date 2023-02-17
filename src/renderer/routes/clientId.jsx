@@ -44,7 +44,7 @@ function Client() {
 
   return (
     <Form
-      className="flex h-full w-full flex-col"
+      className="flex h-full w-full flex-col bg-blue-200"
       key={JSON.stringify(defaultValues)}
       method="post"
       onChange={(e) => {
@@ -73,7 +73,7 @@ function Client() {
           </button>
         </div>
       </div>
-      <div className="flex flex-wrap">
+      <div className="flex flex-wrap bg-white border-y-2">
         <fieldset className="flex min-w-md grow basis-1/3 flex-col gap-4 p-4">
           <h2 className="text-lg font-semibold">Organisation identity</h2>
           <div className="mb-3 flex max-w-lg flex-col-reverse gap-2">
