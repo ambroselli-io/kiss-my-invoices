@@ -1,7 +1,7 @@
 import { redirect, useFetcher, useLoaderData, useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
 import html2pdf from "html2pdf.js";
-import { useMemo, useRef, useState } from "react";
+import React, { useMemo, useRef, useState } from "react";
 import CreatableSelect from "react-select/creatable";
 import { readFile, writeFile } from "renderer/utils/fileManagement";
 import useSetDocumentTitle from "renderer/services/useSetDocumentTitle";
@@ -18,6 +18,7 @@ import { getSettings } from "renderer/utils/settings";
 import { getInvoiceName, getInvoiceNumber, getNextInvoiceNumber, sortInvoices } from "renderer/utils/invoice";
 import { computeEmailBody, computeEmailSubject } from "renderer/utils/contact";
 import { ButtonsSatus } from "renderer/components/Invoice/ButtonsSatus";
+import { countries } from "renderer/utils/countries";
 
 export const loader = async ({ params }) => {
   const settings = await getSettings();
@@ -291,11 +292,15 @@ function Invoice() {
               <br />
               {me?.zip} {me?.city}
               <br />
-              {me?.country}
+              {countries.find((c) => c.code === me.country_code)?.country}
               <br />
               {me?.organisation_number_type}: {me?.organisation_number}
-              <br />
-              VAT: {me?.vat_number}
+              {!!me?.vat_number?.length && (
+                <>
+                  <br />
+                  VAT: {me?.vat_number}
+                </>
+              )}
             </p>
 
             <div className="text-right">
@@ -330,11 +335,15 @@ function Invoice() {
                   <br />
                   {client?.zip} {client?.city}
                   <br />
-                  {client?.country}
+                  {countries.find((c) => c.code === client.country_code)?.country}
                   <br />
                   {client?.organisation_number_type}: {client?.organisation_number}
-                  <br />
-                  VAT: {client?.vat_number}
+                  {!!client?.vat_number?.length && (
+                    <>
+                      <br />
+                      VAT: {client?.vat_number}
+                    </>
+                  )}
                 </p>
               )}
             </div>
@@ -356,22 +365,22 @@ function Invoice() {
               invoiceFetcher.submit(form, { method: "post" });
             }}
           />
-          <div className="grid grid-cols-invoice overflow-hidden border border-gray-400 bg-gray-300">
+          <div className="grid grid-cols-invoice border border-gray-400 bg-gray-300">
             <div />
-            <p className="flex h-full items-center">Item</p>
-            <p className="border-l border-gray-400 flex h-full justify-center items-center">Quantity</p>
-            <p className="border-l border-gray-400 flex h-full justify-center items-center">Unit</p>
-            <p className="border-l border-gray-400 text-center">
+            <div className="flex h-full items-center">Item</div>
+            <CenteredForPrinting isPrinting={isPrinting}>Quantity</CenteredForPrinting>
+            <CenteredForPrinting isPrinting={isPrinting}>Unit</CenteredForPrinting>
+            <CenteredForPrinting isPrinting={isPrinting}>
               Pre-tax
               <br />
               unit price ({getCurrencySymbol(me.country_code)})
-            </p>
-            <p className="border-l border-gray-400 text-center">
+            </CenteredForPrinting>
+            <CenteredForPrinting isPrinting={isPrinting}>
               VAT
               <br />
               (%)
-            </p>
-            <p className="border-l border-gray-400 flex h-full justify-center items-center">Price</p>
+            </CenteredForPrinting>
+            <CenteredForPrinting isPrinting={isPrinting}>Price</CenteredForPrinting>
           </div>
           {items?.map((item, index) => {
             return (
@@ -412,19 +421,33 @@ function Invoice() {
           <div className="mt-auto flex justify-start gap-4">
             <p>Payment details:</p>
             <p>
-              IBAN: NL20 BUNQ 2082 8975 83
-              <br />
-              BIC: BUNQNL2AXXX <br />
+              {settings.payment_details.split("\n").map((line) => {
+                return (
+                  <React.Fragment key={line}>
+                    {line}
+                    <br />
+                  </React.Fragment>
+                );
+              })}
             </p>
           </div>
           <p className="text-sm mt-10">
-            <strong>Payment terms:</strong> Payment is due within 30 days of receipt of invoice. Late payments will be
-            subject to a 5% surcharge, to which will be added a 40€ collection fee.
+            <strong>Payment terms:</strong>{" "}
+            {settings.payment_terms.split("\n").map((line) => {
+              return (
+                <React.Fragment key={line}>
+                  {line}
+                  <br />
+                </React.Fragment>
+              );
+            })}
           </p>
           <p className="mt-10 w-full text-center text-xs">
-            A.J.M. AMBROSELLI - Goudsbloemstraat 35D - 1015JJ Amsterdam - Netherlands
+            {me.organisation_name} - {me.address} - {me.zip} {me.city} -{" "}
+            {countries.find((c) => c.code === me.country_code)?.country}
             <br />
-            KVK Nummer: 88631273 - Btw-identificatienummer: NL004636768B16
+            {me.organisation_number_type}: {me.organisation_number}
+            {me.vat_number ? ` - VAT: ${me.vat_number}` : ""}
             <br />
             <strong>Thank you for your business!</strong>
           </p>
@@ -462,7 +485,7 @@ function Item({ item, index, items, setItems, invoiceNumber, invoiceFetcher, def
       <input type="hidden" name="invoice_number" defaultValue={invoiceNumber} />
       <p className="py-2 pl-1">{index + 1} - </p>
       <input
-        className="border-none py-2"
+        className="py-2 text-base"
         type="text"
         placeholder="Type a task here..."
         name="title"
@@ -544,6 +567,19 @@ function ClientOption(_client, options) {
     return <span>Création de {_client?.name}...</span>;
   }
   return <Client client={_client} selected />;
+}
+
+function CenteredForPrinting({ children, className = "" }) {
+  return (
+    <div
+      className={[
+        "p-0 m-0 align-top border-l border-gray-400 text-center flex flex-col h-full justify-center items-center",
+        className,
+      ].join(" ")}
+    >
+      <span className={[""].filter(Boolean).join(" ")}>{children}</span>
+    </div>
+  );
 }
 
 export default Invoice;

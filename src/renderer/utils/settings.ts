@@ -6,6 +6,8 @@ export type Settings = {
   invoice_number_format: string;
   generic_email_template_body: string;
   generic_email_template_subject: string;
+  payment_details: string;
+  payment_terms: string;
   invoices_folder_path_error: boolean;
 };
 

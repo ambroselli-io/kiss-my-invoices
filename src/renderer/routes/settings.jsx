@@ -66,199 +66,247 @@ function Settings() {
           </button>
         </div>
       </div>
-      <div className="flex flex-wrap bg-white border-y-2">
-        <fieldset className="flex min-w-md grow basis-1/2 flex-col gap-4 p-4">
-          <h2 className="text-lg font-semibold">Global settings</h2>
-          <div className="mb-3 flex max-w-screen-lg flex-col-reverse gap-2">
-            <input
-              name="invoices_folder_path"
-              type="text"
-              id="invoices_folder_path"
-              className="outline-main block w-full rounded border border-black bg-transparent p-2.5 text-black transition-all"
-              placeholder="/Users/arnaudambroselli/Pro/__admin/ZZP/My invoices"
-              defaultValue={defaultValues.current.invoices_folder_path}
-            />
-            <label htmlFor="name">Invoices folder path</label>
+      <div className="flex flex-col bg-white border-y-2">
+        <details
+          open={!defaultValues.current.invoices_folder_path}
+          className="flex min-w-md grow basis-1/2 flex-col gap-4 p-4"
+        >
+          <summary>
+            <h2 className="inline text-lg font-semibold">Files and folders required settings</h2>
+          </summary>
+          <div className="pt-2 pl-4">
+            <div className="mb-3 flex max-w-screen-lg flex-col-reverse gap-2">
+              <input
+                name="invoices_folder_path"
+                type="text"
+                id="invoices_folder_path"
+                className="outline-main block w-full rounded border border-black bg-transparent p-2.5 text-black transition-all"
+                placeholder="/Users/arnaudambroselli/Pro/__admin/ZZP/My invoices"
+                defaultValue={defaultValues.current.invoices_folder_path}
+              />
+              <label htmlFor="name">Invoices folder path</label>
+            </div>
+            <div className="mb-3 flex max-w-screen-lg flex-col-reverse gap-2">
+              <input
+                name="invoice_file_name"
+                type="text"
+                id="invoice_file_name"
+                className="outline-main block w-full rounded border border-black bg-transparent p-2.5 text-black transition-all"
+                placeholder="{INVOICE DATE} - {INVOICE NUMBER} - {MY COMPANY NAME} - {CLIENT NAME}.pdf"
+                defaultValue={defaultValues.current.invoice_file_name || defaultInvoiceName}
+              />
+              <details className="text-xs text-gray-500 pl-8">
+                <summary className="-mr-4">
+                  Click here to see the list of items you can use to make up your invoice name
+                </summary>
+                We&#39;ll replace the following items with the actual values (don&#39;t forget to add the curly brackets
+                around the item name):
+                <ul className="list-inside list-disc">
+                  <li>
+                    <code>{`{INVOICE DATE}`}</code> - The invoice emission date
+                  </li>
+                  <li>
+                    <code>{`{INVOICE NUMBER}`}</code> - The invoice number
+                  </li>
+                  <li>
+                    <code>{`{INVOICE TITLE}`}</code> - The invoice title
+                  </li>
+                  <li>
+                    <code>{`{MY COMPANY NAME}`}</code> - Your company name
+                  </li>
+                  <li>
+                    <code>{`{CLIENT NAME}`}</code> - The client name
+                  </li>
+                </ul>
+              </details>
+              <label htmlFor="name">Typical invoice file name</label>
+            </div>
+            <div className="mb-3 flex max-w-screen-lg flex-col-reverse gap-2">
+              <input
+                name="invoice_number_format"
+                type="text"
+                id="invoice_number_format"
+                className="outline-main block w-full rounded border border-black bg-transparent p-2.5 text-black transition-all"
+                placeholder="{YYYY}-{MM}-{INC}"
+                defaultValue={defaultValues.current.invoice_number_format || defaultInvoiceNumberFormat}
+              />
+              <details className="text-xs text-gray-500 pl-8">
+                <summary className="-mr-4">
+                  Click here to see the list of items you can use to make up your invoice name
+                </summary>
+                We&#39;ll replace the following items with the actual values (don&#39;t forget to add the curly brackets
+                around the item name):
+                <ul className="list-inside list-disc">
+                  <li>
+                    <code>{`{YYYY}`}</code> - The current year (e.g. {dayjs().format("YYYY")})
+                  </li>
+                  <li>
+                    <code>{`{MM}`}</code> - The current month (e.g. {dayjs().format("MM")})
+                  </li>
+                  <li>
+                    <code>{`{CLIENT CODE}`}</code> - The client code if any
+                  </li>
+                  <li>
+                    <code>{`{INC}`}</code> - The incremental number (e.g. 001, 002, 003, etc.)
+                  </li>
+                </ul>
+              </details>
+              <label htmlFor="name">Typical invoice number</label>
+            </div>
           </div>
-          <div className="mb-3 flex max-w-screen-lg flex-col-reverse gap-2">
-            <input
-              name="invoice_file_name"
-              type="text"
-              id="invoice_file_name"
-              className="outline-main block w-full rounded border border-black bg-transparent p-2.5 text-black transition-all"
-              placeholder="{INVOICE DATE} - {INVOICE NUMBER} - {MY COMPANY NAME} - {CLIENT NAME}.pdf"
-              defaultValue={defaultValues.current.invoice_file_name || defaultInvoiceName}
-            />
-            <details className="text-xs text-gray-500 pl-8">
+        </details>
+        <details
+          open={!defaultValues.current.payment_details}
+          className="flex min-w-md grow basis-1/2 flex-col gap-4 p-4"
+        >
+          <summary>
+            <h2 className="inline text-lg font-semibold">Payment settings</h2>
+          </summary>
+          <div className="pt-2 pl-4">
+            <div className="mb-3 flex max-w-lg flex-col-reverse gap-2">
+              <textarea
+                name="payment_details"
+                id="payment_details"
+                className="outline-main block w-full rounded border border-black bg-transparent p-2.5 text-black transition-all"
+                placeholder="IBAN: NL20 XXXX 1234 5678 1&#10;BIC: MAGIC2AXXX"
+                defaultValue={defaultValues.current.payment_details}
+                rows={3}
+              />
+              <label htmlFor="payment_details">Payment details</label>
+            </div>
+            <div className="mb-3 flex max-w-lg flex-col-reverse gap-2">
+              <textarea
+                name="payment_terms"
+                id="payment_terms"
+                className="outline-main block w-full rounded border border-black bg-transparent p-2.5 text-black transition-all"
+                placeholder="Payment is due within 30 days of receipt of invoice. Late payments will be subject to a 5% surcharge, to which will be added a 40€ collection fee."
+                rows={3}
+                defaultValue={defaultValues.current.payment_terms}
+              />
+              <details className="text-xs text-gray-500 pl-8">
+                <summary className="-mr-4">Show me an example of payment terms</summary>
+                Payment is due within 30 days of receipt of invoice. Late payments will be subject to a 5% surcharge, to
+                which will be added a 40€ collection fee.
+              </details>
+              <label htmlFor="payment_terms">Payment terms</label>
+            </div>
+          </div>
+        </details>
+        <details className="flex min-w-md grow basis-1/2 flex-col gap-4 p-4">
+          <summary>
+            <h2 className="inline text-lg font-semibold">Generic Email Template</h2>
+          </summary>
+          <div className="pt-2 pl-4">
+            <details className="text-xs text-gray-500 pl-4 mb-4">
               <summary className="-mr-4">
-                Click here to see the list of items you can use to make up your invoice name
+                Click here to see the list of items you can use to make up your generic template email
               </summary>
               We&#39;ll replace the following items with the actual values (don&#39;t forget to add the curly brackets
               around the item name):
               <ul className="list-inside list-disc">
                 <li>
-                  <code>{`{INVOICE DATE}`}</code> - The invoice emission date
+                  <code>{`{client.organisation_name}`}</code> - The client organisation name
                 </li>
                 <li>
-                  <code>{`{INVOICE NUMBER}`}</code> - The invoice number
+                  <code>{`{client.code}`}</code> - The client code
                 </li>
                 <li>
-                  <code>{`{INVOICE TITLE}`}</code> - The invoice title
+                  <code>{`{client.address}`}</code> - The client address (street, street number, etc.)
                 </li>
                 <li>
-                  <code>{`{MY COMPANY NAME}`}</code> - Your company name
+                  <code>{`{client.city}`}</code> - The client city
                 </li>
                 <li>
-                  <code>{`{CLIENT NAME}`}</code> - The client name
+                  <code>{`{client.zip}`}</code> - The client zip code
+                </li>
+                <li>
+                  <code>{`{client.country}`}</code> - The client country
+                </li>
+                <li>
+                  <code>{`{client.contact_name}`}</code> - The client contact name
+                </li>
+                <li>
+                  <code>{`{client.phone}`}</code> - The client phone number
+                </li>
+                <li>
+                  <code>{`{me.organisation_name}`}</code> - Your organisation name
+                </li>
+                <li>
+                  <code>{`{me.organisation_number}`}</code> - Your organisation number
+                </li>
+                <li>
+                  <code>{`{me.vat_number}`}</code> - Your VAT number
+                </li>
+                <li>
+                  <code>{`{me.address}`}</code> - Your address (street, street number, etc.)
+                </li>
+                <li>
+                  <code>{`{me.city}`}</code> - Your city
+                </li>
+                <li>
+                  <code>{`{me.zip}`}</code> - Your zip code
+                </li>
+                <li>
+                  <code>{`{me.country}`}</code> - Your country
+                </li>
+                <li>
+                  <code>{`{me.contact_name}`}</code> - Your contact name
+                </li>
+                <li>
+                  <code>{`{me.email}`}</code> - Your email
+                </li>
+                <li>
+                  <code>{`{me.phone}`}</code> - Your phone number
+                </li>
+                <li>
+                  <code>{`{me.website}`}</code> - Your website
+                </li>
+                <li>
+                  <code>{`{me.description}`}</code> - Your description (job, passion, whatever)
+                </li>
+                <li>
+                  <code>{`{invoice.title}`}</code> - The invoice title
+                </li>
+                <li>
+                  <code>{`{invoice.invoice_number}`}</code> - The invoice number
+                </li>
+                <li>
+                  <code>{`{invoice.emission_date}`}</code> - The invoice date
+                </li>
+                <li>
+                  <code>{`{invoice.due_date}`}</code> - The invoice due date
+                </li>
+                <li>
+                  <code>{`{invoice.amount}`}</code> - The invoice amount
                 </li>
               </ul>
             </details>
-            <label htmlFor="name">Typical invoice file name</label>
+            <div className="mb-3 flex max-w-screen-lg flex-col-reverse gap-2">
+              <input
+                name="generic_email_template_subject"
+                type="text"
+                id="generic_email_template_subject"
+                className="outline-main block w-full rounded border border-black bg-transparent p-2.5 text-black transition-all"
+                placeholder="Invoice {invoice.invoice_number} for {invoice.title}"
+                defaultValue={defaultValues.current.generic_email_template_subject || genericEmailTemplateSubject}
+                key={defaultValues.current.generic_email_template_subject || genericEmailTemplateSubject}
+              />
+              <label htmlFor="generic_email_template_subject">Subject</label>
+            </div>
+            <div className="mb-3 flex max-w-screen-lg flex-col-reverse gap-2">
+              <textarea
+                name="generic_email_template_body"
+                id="generic_email_template_body"
+                className="outline-main block w-full rounded border border-black bg-transparent p-2.5 text-black transition-all"
+                placeholder={genericEmailTemplate}
+                key={defaultValues.current.generic_email_template_body || genericEmailTemplate}
+                defaultValue={defaultValues.current.generic_email_template_body || genericEmailTemplate}
+                rows={20}
+              />
+              <label htmlFor="generic_email_template_body">Body</label>
+            </div>
           </div>
-          <div className="mb-3 flex max-w-screen-lg flex-col-reverse gap-2">
-            <input
-              name="invoice_number_format"
-              type="text"
-              id="invoice_number_format"
-              className="outline-main block w-full rounded border border-black bg-transparent p-2.5 text-black transition-all"
-              placeholder="{YYYY}-{MM}-{INC}"
-              defaultValue={defaultValues.current.invoice_number_format || defaultInvoiceNumberFormat}
-            />
-            <details className="text-xs text-gray-500 pl-8">
-              <summary className="-mr-4">
-                Click here to see the list of items you can use to make up your invoice name
-              </summary>
-              We&#39;ll replace the following items with the actual values (don&#39;t forget to add the curly brackets
-              around the item name):
-              <ul className="list-inside list-disc">
-                <li>
-                  <code>{`{YYYY}`}</code> - The current year (e.g. {dayjs().format("YYYY")})
-                </li>
-                <li>
-                  <code>{`{MM}`}</code> - The current month (e.g. {dayjs().format("MM")})
-                </li>
-                <li>
-                  <code>{`{CLIENT CODE}`}</code> - The client code if any
-                </li>
-                <li>
-                  <code>{`{INC}`}</code> - The incremental number (e.g. 001, 002, 003, etc.)
-                </li>
-              </ul>
-            </details>
-            <label htmlFor="name">Typical invoice number</label>
-          </div>
-        </fieldset>
-        <fieldset className="flex min-w-md grow basis-1/2 flex-col gap-4 p-4">
-          <h2 className="text-lg font-semibold">Generic Email Template</h2>
-          <details className="text-xs text-gray-500 pl-8">
-            <summary className="-mr-4">
-              Click here to see the list of items you can use to make up your generic template email
-            </summary>
-            We&#39;ll replace the following items with the actual values (don&#39;t forget to add the curly brackets
-            around the item name):
-            <ul className="list-inside list-disc">
-              <li>
-                <code>{`{client.organisation_name}`}</code> - The client organisation name
-              </li>
-              <li>
-                <code>{`{client.code}`}</code> - The client code
-              </li>
-              <li>
-                <code>{`{client.address}`}</code> - The client address (street, street number, etc.)
-              </li>
-              <li>
-                <code>{`{client.city}`}</code> - The client city
-              </li>
-              <li>
-                <code>{`{client.zip}`}</code> - The client zip code
-              </li>
-              <li>
-                <code>{`{client.country}`}</code> - The client country
-              </li>
-              <li>
-                <code>{`{client.contact_name}`}</code> - The client contact name
-              </li>
-              <li>
-                <code>{`{client.phone}`}</code> - The client phone number
-              </li>
-              <li>
-                <code>{`{me.organisation_name}`}</code> - Your organisation name
-              </li>
-              <li>
-                <code>{`{me.organisation_number}`}</code> - Your organisation number
-              </li>
-              <li>
-                <code>{`{me.vat_number}`}</code> - Your VAT number
-              </li>
-              <li>
-                <code>{`{me.address}`}</code> - Your address (street, street number, etc.)
-              </li>
-              <li>
-                <code>{`{me.city}`}</code> - Your city
-              </li>
-              <li>
-                <code>{`{me.zip}`}</code> - Your zip code
-              </li>
-              <li>
-                <code>{`{me.country}`}</code> - Your country
-              </li>
-              <li>
-                <code>{`{me.contact_name}`}</code> - Your contact name
-              </li>
-              <li>
-                <code>{`{me.email}`}</code> - Your email
-              </li>
-              <li>
-                <code>{`{me.phone}`}</code> - Your phone number
-              </li>
-              <li>
-                <code>{`{me.website}`}</code> - Your website
-              </li>
-              <li>
-                <code>{`{me.description}`}</code> - Your description (job, passion, whatever)
-              </li>
-              <li>
-                <code>{`{invoice.title}`}</code> - The invoice title
-              </li>
-              <li>
-                <code>{`{invoice.invoice_number}`}</code> - The invoice number
-              </li>
-              <li>
-                <code>{`{invoice.emission_date}`}</code> - The invoice date
-              </li>
-              <li>
-                <code>{`{invoice.due_date}`}</code> - The invoice due date
-              </li>
-              <li>
-                <code>{`{invoice.amount}`}</code> - The invoice amount
-              </li>
-            </ul>
-          </details>
-          <div className="mb-3 flex max-w-screen-lg flex-col-reverse gap-2">
-            <input
-              name="generic_email_template_subject"
-              type="text"
-              id="generic_email_template_subject"
-              className="outline-main block w-full rounded border border-black bg-transparent p-2.5 text-black transition-all"
-              placeholder="Invoice {invoice.invoice_number} for {invoice.title}"
-              defaultValue={defaultValues.current.generic_email_template_subject || genericEmailTemplateSubject}
-              key={defaultValues.current.generic_email_template_subject || genericEmailTemplateSubject}
-            />
-            <label htmlFor="generic_email_template_subject">Subject</label>
-          </div>
-          <div className="mb-3 flex max-w-screen-lg flex-col-reverse gap-2">
-            <textarea
-              name="generic_email_template_body"
-              id="generic_email_template_body"
-              className="outline-main block w-full rounded border border-black bg-transparent p-2.5 text-black transition-all"
-              placeholder={genericEmailTemplate}
-              key={defaultValues.current.generic_email_template_body || genericEmailTemplate}
-              defaultValue={defaultValues.current.generic_email_template_body || genericEmailTemplate}
-              rows={20}
-            />
-            <label htmlFor="generic_email_template_body">Body</label>
-          </div>
-        </fieldset>
+        </details>
       </div>
     </Form>
   );

@@ -26,6 +26,7 @@ export const action = async ({ request }) => {
 
 function Me() {
   const { me } = useLoaderData();
+  console.log("me", me);
   const [saveDisabled, setSaveDisabled] = useState(true);
 
   const defaultValues = useRef(
@@ -110,6 +111,33 @@ function Me() {
             />
             <label htmlFor="vat_number">VAT number</label>
           </div>
+          <div className="mb-3 flex max-w-lg flex-col-reverse gap-2">
+            <textarea
+              name="payment_details"
+              id="payment_details"
+              className="outline-main block w-full rounded border border-black bg-transparent p-2.5 text-black transition-all"
+              placeholder="IBAN: NL20 XXXX 1234 5678 1\nBIC: MAGIC2AXXX"
+              defaultValue={defaultValues.current.payment_details}
+              rows={3}
+            />
+            <label htmlFor="payment_details">Payment details</label>
+          </div>
+          <div className="mb-3 flex max-w-lg flex-col-reverse gap-2">
+            <textarea
+              name="payment_terms"
+              id="payment_terms"
+              className="outline-main block w-full rounded border border-black bg-transparent p-2.5 text-black transition-all"
+              placeholder="Payment is due within 30 days of receipt of invoice. Late payments will be subject to a 5% surcharge, to which will be added a 40€ collection fee."
+              rows={3}
+              defaultValue={defaultValues.current.payment_terms}
+            />
+            <details className="text-xs text-gray-500 pl-8">
+              <summary className="-mr-4">Show me an example of payment terms</summary>
+              Payment is due within 30 days of receipt of invoice. Late payments will be subject to a 5% surcharge, to
+              which will be added a 40€ collection fee.
+            </details>
+            <label htmlFor="payment_terms">Payment terms</label>
+          </div>
         </div>
         <div className="flex min-w-md grow basis-1/3 flex-col gap-4 p-4">
           <div className="mb-3 flex max-w-lg flex-col-reverse gap-2">
@@ -118,6 +146,7 @@ function Me() {
               id="address"
               className="outline-main block w-full rounded border border-black bg-transparent p-2.5 text-black transition-all"
               placeholder="1, avenue des Champs Elysées"
+              rows={1}
               defaultValue={defaultValues.current.address}
             />
             <label htmlFor="address">Address</label>
@@ -145,42 +174,20 @@ function Me() {
             <label htmlFor="zip">Zip</label>
           </div>
           <div className="mb-3 flex max-w-lg flex-col-reverse gap-2">
-            {/* <input
-              name="country"
-              type="text"
-              id="country"
-              className="outline-main block w-full rounded border border-black bg-transparent p-2.5 text-black transition-all"
-              placeholder="France"
-              defaultValue={defaultValues.current.country}
-            /> */}
             <Select
               options={countries}
               className="outline-main block w-full py-1 rounded bg-transparent text-black transition-all [&_*]:!border-black"
               name="country_code"
-              defaultInputValue={countries.find((c) => c.code === me.country_code)?.country}
+              defaultInputValue={countries.find((c) => c.code === defaultValues.current.country_code)?.country}
               getOptionValue={(option) => option.code}
               getOptionLabel={(option) => option.country}
               form="me"
               onChange={() => {
                 setSaveDisabled(false);
               }}
-              // formatOptionLabel={ClientOption}
             />
-            <label htmlFor="country">Country</label>
-            {/* iso-3166-1-alpha-2 */}
+            <label htmlFor="country_code">Country</label>
           </div>
-
-          {/* <div className="mb-3 flex max-w-lg flex-col-reverse gap-2">
-            <input
-              name="country_code"
-              type="text"
-              id="country_code"
-              className="outline-main block w-full rounded border border-black bg-transparent p-2.5 text-black transition-all"
-              placeholder="FR"
-              defaultValue={defaultValues.current.country_code}
-            />
-            <label htmlFor="country">Country code</label>
-          </div> */}
         </div>
         <div className="flex min-w-md grow basis-1/3 flex-col gap-4 p-4">
           <div className="mb-3 flex max-w-lg flex-col-reverse gap-2">

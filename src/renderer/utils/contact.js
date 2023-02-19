@@ -1,3 +1,5 @@
+import { countries } from "./countries";
+
 export const genericEmailTemplate = `Hello {client.contact_name},
 
 I hope this email finds you well. Attached you will find the invoice for the work completed on {invoice.title}.
@@ -25,7 +27,7 @@ const computeEmailTemplate = ({ template, client, invoice, me }) => {
     .replace(/{client.address}/g, client.address)
     .replace(/{client.city}/g, client.city)
     .replace(/{client.zip}/g, client.zip)
-    .replace(/{client.country}/g, client.country)
+    .replace(/{client.country}/g, countries.find((c) => c.code === client.country_code)?.country)
     .replace(/{client.contact_name}/g, client.contact_name)
     .replace(/{client.phone}/g, client.phone)
     .replace(/{me.organisation_name}/g, me.organisation_name)
@@ -34,7 +36,7 @@ const computeEmailTemplate = ({ template, client, invoice, me }) => {
     .replace(/{me.address}/g, me.address)
     .replace(/{me.city}/g, me.city)
     .replace(/{me.zip}/g, me.zip)
-    .replace(/{me.country}/g, me.country)
+    .replace(/{me.country}/g, countries.find((c) => c.code === me.country_code)?.country)
     .replace(/{me.contact_name}/g, me.contact_name)
     .replace(/{me.email}/g, me.email)
     .replace(/{me.phone}/g, me.phone)

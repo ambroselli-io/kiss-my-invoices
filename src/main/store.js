@@ -44,6 +44,14 @@ const store = new Store({
           type: "string",
           default: "",
         },
+        payment_details: {
+          type: "string",
+          default: "",
+        },
+        payment_terms: {
+          type: "string",
+          default: "",
+        },
       },
     },
   },

@@ -19,10 +19,13 @@ export const getCurrencySymbol = () => {
 };
 
 export const formatToCurrency = (number) => {
+  if (!window.countryCode) window.countryCode = "FR";
   const currency = countries.find((c) => c.code === window.countryCode)?.currency;
-  return Intl.NumberFormat(window.countryCode, { style: "currency", currency, minimumSignificantDigits: 1 }).format(
-    number,
-  );
+  return Intl.NumberFormat(window.countryCode, {
+    style: "currency",
+    currency: "EUR",
+    minimumSignificantDigits: 1,
+  }).format(number);
 };
 
 export const getTotalPretaxPrice = (items = []) =>

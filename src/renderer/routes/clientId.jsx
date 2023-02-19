@@ -1,7 +1,9 @@
 import { useMemo, useState } from "react";
 import { Form, redirect, useLoaderData } from "react-router-dom";
 import useSetDocumentTitle from "renderer/services/useSetDocumentTitle";
+import { countries } from "renderer/utils/countries";
 import { readFile, writeFile } from "renderer/utils/fileManagement";
+import Select from "react-select";
 
 export const loader = async ({ params }) => {
   const clients = await readFile("clients.json", { default: [] });
@@ -187,16 +189,19 @@ function Client() {
             <label htmlFor="zip">Zip</label>
           </div>
           <div className="mb-3 flex max-w-lg flex-col-reverse gap-2">
-            <input
-              name="country"
-              type="text"
-              id="country"
-              className="outline-main block w-full rounded border border-black bg-transparent p-2.5 text-black transition-all"
-              placeholder="United States"
-              defaultValue={defaultValues.country}
-              key={defaultValues.country}
+            <Select
+              options={countries}
+              className="outline-main block w-full py-1 rounded bg-transparent text-black transition-all [&_*]:!border-black"
+              name="country_code"
+              defaultInputValue={countries.find((c) => c.code === defaultValues.country_code)?.country}
+              getOptionValue={(option) => option.code}
+              getOptionLabel={(option) => option.country}
+              form="me"
+              onChange={() => {
+                setSaveDisabled(false);
+              }}
             />
-            <label htmlFor="country">Country</label>
+            <label htmlFor="country_code">Country</label>
           </div>
         </fieldset>
         <fieldset className="flex min-w-md grow basis-1/3 flex-col gap-4 p-4">
