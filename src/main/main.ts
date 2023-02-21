@@ -84,7 +84,7 @@ const createWindow = async () => {
       // nodeIntegration: true,
       // contextIsolation: false,
       // comment below if https://electron-react-boilerplate.js.org/docs/native-modules/
-      devTools: isDebug,
+      devTools: true,
       preload: app.isPackaged ? path.join(__dirname, "preload.js") : path.join(__dirname, "../../.erb/dll/preload.js"),
     },
   });

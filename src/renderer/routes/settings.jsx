@@ -1,6 +1,6 @@
 import dayjs from "dayjs";
 import { useRef, useState } from "react";
-import { Form, useLoaderData } from "react-router-dom";
+import { Form, redirect, useLoaderData } from "react-router-dom";
 import { genericEmailTemplate, genericEmailTemplateSubject } from "renderer/utils/contact";
 import { getSettings, setSettings } from "renderer/utils/settings";
 
@@ -10,11 +10,19 @@ export const loader = async () => {
 };
 
 export const action = async ({ request }) => {
-  const updatedSettings = Object.fromEntries(await request.formData());
-  console.log("updatedSettings", updatedSettings);
+  const formData = await request.formData();
+  const updatedSettings = Object.fromEntries(formData);
+  console.log("is onboardin", formData.get("onboarding"));
+  if (updatedSettings.onboarding) delete updatedSettings.onboarding;
   const settings = await setSettings(updatedSettings);
   if (JSON.stringify(settings) !== JSON.stringify(updatedSettings)) {
+    console.log("Something went wrong", settings, updatedSettings);
     return { ok: false, status: 500, body: "Something went wrong" };
+  }
+  console.log("LALALA");
+  if (formData.get("onboarding")) {
+    console.log("MOI");
+    return redirect("/me");
   }
   return { ok: true };
 };
@@ -35,6 +43,54 @@ function Settings() {
     if (genericEmailTemplateSubject !== defaultValues.current.generic_email_template_subject) return false;
     return true;
   });
+
+  if (!defaultValues.current.invoices_folder_path) {
+    return (
+      <Form
+        className="flex h-full w-full flex-col"
+        method="post"
+        onChange={(e) => {
+          setSaveDisabled(false);
+        }}
+        onSubmit={() => {
+          setSaveDisabled(true);
+        }}
+      >
+        <input type="hidden" name="onboarding" value="true" />
+        <div className="flex-1 flex items-center justify-center border-b-2 bg-orange-200">
+          <h1 className="text-3xl font-bold">Welcome to Kiss my invoices! 💋</h1>
+        </div>
+        <div className="flex-1 flex flex-col items-center justify-center">
+          <h2 className="text-lg font-semibold max-w-screen-lg text-center">
+            <label htmlFor="invoices_folder_path">
+              Before you start creating clients and invoices,
+              <br />
+              please tell us a path where we can save them on your computer:
+            </label>
+          </h2>
+          <div className="flex min-w-md basis-1/2 flex-col gap-4 p-4">
+            <div className="mb-3 flex max-w-screen-lg flex-col-reverse items-center gap-2">
+              <input
+                name="invoices_folder_path"
+                type="text"
+                id="invoices_folder_path"
+                className="outline-main block w-full rounded border border-black bg-transparent p-2.5 text-black transition-all"
+                placeholder="/Users/arnaudambroselli/Pro/__admin/ZZP/My invoices"
+                defaultValue={defaultValues.current.invoices_folder_path}
+              />
+            </div>
+            <button
+              disabled={saveDisabled}
+              className="rounded bg-gray-800 py-2 px-12 text-gray-50 disabled:opacity-30"
+              type="submit"
+            >
+              Save
+            </button>
+          </div>
+        </div>
+      </Form>
+    );
+  }
 
   return (
     <Form
@@ -84,7 +140,7 @@ function Settings() {
                 placeholder="/Users/arnaudambroselli/Pro/__admin/ZZP/My invoices"
                 defaultValue={defaultValues.current.invoices_folder_path}
               />
-              <label htmlFor="name">Invoices folder path</label>
+              <label htmlFor="invoices_folder_path">Invoices folder path</label>
             </div>
             <div className="mb-3 flex max-w-screen-lg flex-col-reverse gap-2">
               <input
@@ -119,7 +175,7 @@ function Settings() {
                   </li>
                 </ul>
               </details>
-              <label htmlFor="name">Typical invoice file name</label>
+              <label htmlFor="invoice_file_name">Typical invoice file name</label>
             </div>
             <div className="mb-3 flex max-w-screen-lg flex-col-reverse gap-2">
               <input
@@ -151,7 +207,7 @@ function Settings() {
                   </li>
                 </ul>
               </details>
-              <label htmlFor="name">Typical invoice number</label>
+              <label htmlFor="invoice_number_format">Typical invoice number</label>
             </div>
           </div>
         </details>
@@ -192,7 +248,7 @@ function Settings() {
             </div>
           </div>
         </details>
-        <details className="flex min-w-md grow basis-1/2 flex-col gap-4 p-4">
+        <details open className="flex min-w-md grow basis-1/2 flex-col gap-4 p-4">
           <summary>
             <h2 className="inline text-lg font-semibold">Generic Email Template</h2>
           </summary>

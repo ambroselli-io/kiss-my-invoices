@@ -76,7 +76,7 @@ function Me() {
               placeholder="Froadmaps"
               defaultValue={defaultValues.current.organisation_name}
             />
-            <label htmlFor="name">Company Name</label>
+            <label htmlFor="organisation_name">Company Name</label>
           </div>
           <div className="mb-3 flex max-w-lg flex-col-reverse gap-2">
             <input

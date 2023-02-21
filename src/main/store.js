@@ -26,31 +26,24 @@ const store = new Store({
       properties: {
         invoices_folder_path: {
           type: "string",
-          default: "",
         },
         invoice_file_name: {
           type: "string",
-          default: "",
         },
         invoice_number_format: {
           type: "string",
-          default: "",
         },
         generic_email_template_body: {
           type: "string",
-          default: "",
         },
         generic_email_template_subject: {
           type: "string",
-          default: "",
         },
         payment_details: {
           type: "string",
-          default: "",
         },
         payment_terms: {
           type: "string",
-          default: "",
         },
       },
     },
@@ -63,8 +56,12 @@ ipcMain.handle("app:save-settings", async (_event, settings) => {
 });
 
 ipcMain.handle("app:get-settings", async () => {
-  const settings = store.get("settings");
+  let settings = store.get("settings");
   // check if invoices_folder_path is a real path)
+  if (!settings) {
+    settings = {};
+    store.set("settings", settings);
+  }
   if (settings.invoices_folder_path) {
     if (!fs.existsSync(settings.invoices_folder_path)) {
       settings.invoices_folder_path_error = true;

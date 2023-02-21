@@ -89,7 +89,7 @@ function Client() {
               defaultValue={defaultValues.organisation_name}
               key={defaultValues.organisation_name}
             />
-            <label htmlFor="name">Name</label>
+            <label htmlFor="organisation_name">Name</label>
           </div>
           <div className="mb-3 flex max-w-lg flex-col-reverse gap-2">
             <input

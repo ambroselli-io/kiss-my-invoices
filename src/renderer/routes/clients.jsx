@@ -30,8 +30,8 @@ function Clients() {
   useSetDocumentTitle(`My Clients | ${me?.organisation_name} | 💋 Kiss my Invoices`);
 
   return (
-    <div className="flex h-full w-full flex-col bg-blue-200">
-      <div className="my-12 flex items-center justify-between px-12 print:hidden">
+    <div className="flex h-full w-full flex-col">
+      <div className="py-12 flex items-center justify-between px-12 print:hidden bg-blue-200">
         <h1 className="text-3xl font-bold">Clients {me?.organisation_name}</h1>
         <div className="flex items-center gap-4">
           <Link className="rounded bg-gray-800 py-2 px-12 text-gray-50" to="/invoice/new">
@@ -42,73 +42,74 @@ function Clients() {
           </Link>
         </div>
       </div>
-      <main className="flex flex-1 basis-full flex-col justify-start pb-4 text-xs md:pb-8 ">
-        <div className="relative w-full mx-auto border-x bg-white">
-          <div
-            aria-roledescription="Header of the list of features - Clicking on a column header can sort the invoice by the column, ascending or descending"
-            className="grid-cols-clients sticky top-0 z-50 hidden md:grid"
-          >
-            <div className="flex cursor-pointer border-y-2 border-x border-gray-900 bg-white p-2 text-left font-medium text-gray-900">
-              <div className="relative flex w-full -translate-y-1/2 rotate-90 md:translate-y-0 md:rotate-0">
-                <SortArrowButton
-                  field="invoice_number"
-                  onClick={onColumnClick}
-                  // sortOrder={sortOrder}
-                  // sortBy={sortBy}
-                />
-                <HeaderButton title="Client name" field="organization_name" onClick={onColumnClick} />
+      {clients?.length && (
+        <main className="flex flex-1 basis-full flex-col justify-start pb-4 text-xs md:pb-8 ">
+          <div className="relative w-full mx-auto border-x bg-white">
+            <div
+              aria-roledescription="Header of the list of features - Clicking on a column header can sort the invoice by the column, ascending or descending"
+              className="grid-cols-clients sticky top-0 z-50 hidden md:grid"
+            >
+              <div className="flex cursor-pointer border-y-2 border-x border-gray-900 bg-white p-2 text-left font-medium text-gray-900">
+                <div className="relative flex w-full -translate-y-1/2 rotate-90 md:translate-y-0 md:rotate-0">
+                  <SortArrowButton
+                    field="invoice_number"
+                    onClick={onColumnClick}
+                    // sortOrder={sortOrder}
+                    // sortBy={sortBy}
+                  />
+                  <HeaderButton title="Client name" field="organization_name" onClick={onColumnClick} />
+                </div>
               </div>
-            </div>
-            <div className="flex cursor-pointer border-y-2 border-x border-gray-900 bg-white p-2 text-left font-medium text-gray-900">
-              <div className="relative flex w-full justify-end -translate-y-1/2 rotate-90 md:translate-y-0 md:rotate-0">
-                <SortArrowButton
-                  field="content"
-                  onClick={onColumnClick}
-                  // sortOrder={sortOrder}
-                  // sortBy={sortBy}
-                />
-                <HeaderButton className="text-right" title={`🤑\u00A0Draft`} field="draft" onClick={onColumnClick} />
+              <div className="flex cursor-pointer border-y-2 border-x border-gray-900 bg-white p-2 text-left font-medium text-gray-900">
+                <div className="relative flex w-full justify-end -translate-y-1/2 rotate-90 md:translate-y-0 md:rotate-0">
+                  <SortArrowButton
+                    field="content"
+                    onClick={onColumnClick}
+                    // sortOrder={sortOrder}
+                    // sortBy={sortBy}
+                  />
+                  <HeaderButton className="text-right" title={`🤑\u00A0Draft`} field="draft" onClick={onColumnClick} />
+                </div>
               </div>
-            </div>
-            <div className="flex cursor-pointer border-y-2 border-x border-gray-900 bg-white p-2 text-left font-medium text-gray-900">
-              <div className="relative flex w-full justify-end -translate-y-1/2 rotate-90 md:translate-y-0 md:rotate-0">
-                <SortArrowButton
-                  field="content"
-                  onClick={onColumnClick}
-                  // sortOrder={sortOrder}
-                  // sortBy={sortBy}
-                />
-                <HeaderButton className="text-right" title={`💸\u00A0Sent`} field="sent" onClick={onColumnClick} />
+              <div className="flex cursor-pointer border-y-2 border-x border-gray-900 bg-white p-2 text-left font-medium text-gray-900">
+                <div className="relative flex w-full justify-end -translate-y-1/2 rotate-90 md:translate-y-0 md:rotate-0">
+                  <SortArrowButton
+                    field="content"
+                    onClick={onColumnClick}
+                    // sortOrder={sortOrder}
+                    // sortBy={sortBy}
+                  />
+                  <HeaderButton className="text-right" title={`💸\u00A0Sent`} field="sent" onClick={onColumnClick} />
+                </div>
               </div>
-            </div>
-            <div className="flex cursor-pointer border-y-2 border-x border-gray-900 bg-white p-2 text-left font-medium text-gray-900">
-              <div className="relative flex w-full justify-end -translate-y-1/2 rotate-90 md:translate-y-0 md:rotate-0">
-                <SortArrowButton
-                  field="content"
-                  onClick={onColumnClick}
-                  // sortOrder={sortOrder}
-                  // sortBy={sortBy}
-                />
-                <HeaderButton className="text-right" title={`💰\u00A0Paid`} field="paid" onClick={onColumnClick} />
+              <div className="flex cursor-pointer border-y-2 border-x border-gray-900 bg-white p-2 text-left font-medium text-gray-900">
+                <div className="relative flex w-full justify-end -translate-y-1/2 rotate-90 md:translate-y-0 md:rotate-0">
+                  <SortArrowButton
+                    field="content"
+                    onClick={onColumnClick}
+                    // sortOrder={sortOrder}
+                    // sortBy={sortBy}
+                  />
+                  <HeaderButton className="text-right" title={`💰\u00A0Paid`} field="paid" onClick={onColumnClick} />
+                </div>
               </div>
-            </div>
-            <div className="flex cursor-pointer border-y-2 border-x border-gray-900 bg-white p-2 text-left font-medium text-gray-900">
-              <div className="relative flex w-full justify-end -translate-y-1/2 rotate-90 md:translate-y-0 md:rotate-0">
-                <SortArrowButton
-                  field="content"
-                  onClick={onColumnClick}
-                  // sortOrder={sortOrder}
-                  // sortBy={sortBy}
-                />
-                <HeaderButton
-                  className="text-right"
-                  title={`🤬\u00A0Overdue`}
-                  field="overdue"
-                  onClick={onColumnClick}
-                />
+              <div className="flex cursor-pointer border-y-2 border-x border-gray-900 bg-white p-2 text-left font-medium text-gray-900">
+                <div className="relative flex w-full justify-end -translate-y-1/2 rotate-90 md:translate-y-0 md:rotate-0">
+                  <SortArrowButton
+                    field="content"
+                    onClick={onColumnClick}
+                    // sortOrder={sortOrder}
+                    // sortBy={sortBy}
+                  />
+                  <HeaderButton
+                    className="text-right"
+                    title={`🤬\u00A0Overdue`}
+                    field="overdue"
+                    onClick={onColumnClick}
+                  />
+                </div>
               </div>
-            </div>
-            {/* <div className="cursor-pointer border-y-2 border-x border-gray-900 bg-white p-2 text-left font-medium text-gray-900 md:flex">
+              {/* <div className="cursor-pointer border-y-2 border-x border-gray-900 bg-white p-2 text-left font-medium text-gray-900 md:flex">
               <div className="relative flex w-full -translate-y-1/2 rotate-90 md:translate-y-0 md:rotate-0">
                 <SortArrowButton
                   field="globalAmount"
@@ -119,7 +120,7 @@ function Clients() {
                 <HeaderButton title={`💸\u00A0Amount HT\u00A0`} field="globalAmount" onClick={onColumnClick} />
               </div>
             </div> */}
-            {/* <div className="flex cursor-pointer border-y-2 border-x border-gray-900 bg-white p-2 text-left font-medium text-gray-900">
+              {/* <div className="flex cursor-pointer border-y-2 border-x border-gray-900 bg-white p-2 text-left font-medium text-gray-900">
               <div className="relative flex w-full -translate-y-1/2 rotate-90 md:translate-y-0 md:rotate-0">
                 <SortArrowButton
                   field="content"
@@ -130,29 +131,34 @@ function Clients() {
                 <HeaderButton field="new-invoice" onClick={onColumnClick} />
               </div>
             </div> */}
+            </div>
+            {clients.map((client, index) => {
+              return (
+                <Link
+                  to={`/client/${client.organisation_number}`}
+                  key={client.organisation_number}
+                  aria-label={client.organisation_name}
+                  className={["grid-cols-clients group grid"].join(" ")}
+                >
+                  <p className="border-x border-b-2 p-2 font-bold">{client.organisation_name}</p>
+                  <p className="text-right border-x border-b-2 p-2">
+                    {getInvoicesTotalPrice(client.invoices, ["DRAFT"])}
+                  </p>
+                  <p className="text-right border-x border-b-2 p-2">
+                    {getInvoicesTotalPrice(client.invoices, ["SENT"])}
+                  </p>
+                  <p className="text-right border-x border-b-2 p-2">
+                    {getInvoicesTotalPrice(client.invoices, ["OVERDUE"])}
+                  </p>
+                  <p className="text-right border-x border-b-2 p-2">
+                    {getInvoicesTotalPrice(client.invoices, ["PAID"])}
+                  </p>
+                </Link>
+              );
+            })}
           </div>
-          {clients.map((client, index) => {
-            return (
-              <Link
-                to={`/client/${client.organisation_number}`}
-                key={client.organisation_number}
-                aria-label={client.organisation_name}
-                className={["grid-cols-clients group grid"].join(" ")}
-              >
-                <p className="border-x border-b-2 p-2 font-bold">{client.organisation_name}</p>
-                <p className="text-right border-x border-b-2 p-2">
-                  {getInvoicesTotalPrice(client.invoices, ["DRAFT"])}
-                </p>
-                <p className="text-right border-x border-b-2 p-2">{getInvoicesTotalPrice(client.invoices, ["SENT"])}</p>
-                <p className="text-right border-x border-b-2 p-2">
-                  {getInvoicesTotalPrice(client.invoices, ["OVERDUE"])}
-                </p>
-                <p className="text-right border-x border-b-2 p-2">{getInvoicesTotalPrice(client.invoices, ["PAID"])}</p>
-              </Link>
-            );
-          })}
-        </div>
-      </main>
+        </main>
+      )}
     </div>
   );
 }
