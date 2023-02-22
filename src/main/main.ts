@@ -8,6 +8,7 @@
  * When running `npm run build` or `npm run build:main`, this file is compiled to
  * `./src/main.js` using webpack. This gives us some performance wins.
  */
+import dotenv from "dotenv";
 import path from "path";
 import { app, BrowserWindow, shell, ipcMain, dialog } from "electron";
 import { autoUpdater } from "electron-updater";
@@ -17,6 +18,8 @@ import { resolveHtmlPath } from "./util";
 import "./fileManagement";
 import store from "./store";
 import "./sendEmailWithAttachment";
+
+dotenv.config({ path: path.join(__dirname, "../../.env") });
 
 class AppUpdater {
   constructor() {
@@ -128,9 +131,12 @@ const createWindow = async () => {
   new AppUpdater();
 };
 
-/**
- * Add event listeners...
- */
+autoUpdater.on("update-available", () => {
+  mainWindow?.webContents.send("update_available");
+});
+autoUpdater.on("update-downloaded", () => {
+  mainWindow?.webContents.send("update_downloaded");
+});
 
 app.on("window-all-closed", () => {
   // Respect the OSX convention of having the application in memory even

@@ -1,7 +1,7 @@
 {
   "name": "kiss-my-invoices",
   "description": "A simple invoice manager for freelancers and independants 💋",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "keywords": [
     "invoice",
     "indihacker"
@@ -27,6 +27,7 @@
     "postinstall": "patch-package && ts-node .erb/scripts/check-native-dep.js && electron-builder install-app-deps && cross-env NODE_ENV=development TS_NODE_TRANSPILE_ONLY=true webpack --config ./.erb/configs/webpack.config.renderer.dev.dll.ts",
     "lint": "cross-env NODE_ENV=development eslint . --ext .js,.jsx,.ts,.tsx",
     "package": "dotenv ts-node ./.erb/scripts/clean.js dist && npm run build && electron-builder build --publish never",
+    "deploy": "dotenv ts-node ./.erb/scripts/clean.js dist && npm run build && electron-builder build --publish always",
     "notarize": "dotenv ts-node ./.erb/scripts/notarize.js",
     "rebuild": "electron-rebuild --parallel --types prod,dev,optional --module-dir release/app",
     "start": "ts-node ./.erb/scripts/check-port-in-use.js && npm run start:renderer",
@@ -194,6 +195,7 @@
           "x64"
         ]
       },
+      "icon": "icon.png",
       "type": "distribution",
       "category": "public.app-category.business",
       "identity": "Arnaud Ambroselli (52FJ92F7JV)",
@@ -218,6 +220,7 @@
       ]
     },
     "win": {
+      "icon": "icon.png",
       "target": [
         "nsis"
       ]
@@ -226,6 +229,7 @@
       "target": [
         "AppImage"
       ],
+      "icon": "icon.png",
       "category": "Development"
     },
     "directories": {

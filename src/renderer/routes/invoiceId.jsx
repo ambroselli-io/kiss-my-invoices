@@ -15,7 +15,13 @@ import {
   getItemPriceWithVat,
 } from "renderer/utils/prices";
 import { getSettings } from "renderer/utils/settings";
-import { getInvoiceName, getInvoiceNumber, getNextInvoiceNumber, sortInvoices } from "renderer/utils/invoice";
+import {
+  defaultInvoiceNumberFormat,
+  getInvoiceName,
+  getInvoiceNumber,
+  getNextInvoiceNumber,
+  sortInvoices,
+} from "renderer/utils/invoice";
 import { computeEmailBody, computeEmailSubject } from "renderer/utils/contact";
 import { ButtonsSatus } from "renderer/components/Invoice/ButtonsSatus";
 import { countries } from "renderer/utils/countries";
@@ -98,7 +104,8 @@ function Invoice() {
       client,
       inc: getNextInvoiceNumber(invoices),
     });
-    if (!settings.invoice_number_format.includes("CLIENT CODE")) return invoice?.invoice_number || defaultInvoiceNumber;
+    const invoiceNumberFormat = settings.invoice_number_format || defaultInvoiceNumberFormat;
+    if (!invoiceNumberFormat.includes("CLIENT CODE")) return invoice?.invoice_number || defaultInvoiceNumber;
     if (!client) return invoice?.invoice_number || defaultInvoiceNumber;
     if (invoice?.invoice_number?.includes("XXXX")) {
       return defaultInvoiceNumber;
@@ -219,8 +226,12 @@ function Invoice() {
           </button>
         </div>
       </div>
-      <ButtonsSatus invoice={invoice} invoiceNumber={invoiceNumber} alwaysShowAll />
-      <div className={["h-a4 w-a4 m-auto mb-10 mt-2 max-w-3xl border-2 border-gray-500 bg-white"].join(" ")}>
+      <ButtonsSatus className="print:hidden" invoice={invoice} invoiceNumber={invoiceNumber} alwaysShowAll />
+      <div
+        className={["h-a4 w-a4 m-auto mb-10 mt-2 max-w-3xl border-2 print:border-none border-gray-500 bg-white"].join(
+          " ",
+        )}
+      >
         <div
           ref={printableAreaRef}
           className="h-a4 w-a4 max-w-3xl text-base text-gray-600 overflow-hidden flex flex-col p-8"
@@ -421,7 +432,7 @@ function Invoice() {
           <div className="mt-auto flex justify-start gap-4">
             <p>Payment details:</p>
             <p>
-              {settings.payment_details.split("\n").map((line) => {
+              {settings.payment_details?.split("\n").map((line) => {
                 return (
                   <React.Fragment key={line}>
                     {line}
@@ -433,7 +444,7 @@ function Invoice() {
           </div>
           <p className="text-sm mt-10">
             <strong>Payment terms:</strong>{" "}
-            {settings.payment_terms.split("\n").map((line) => {
+            {settings.payment_terms?.split("\n").map((line) => {
               return (
                 <React.Fragment key={line}>
                   {line}

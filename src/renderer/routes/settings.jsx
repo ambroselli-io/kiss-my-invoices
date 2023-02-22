@@ -2,6 +2,7 @@ import dayjs from "dayjs";
 import { useRef, useState } from "react";
 import { Form, redirect, useLoaderData } from "react-router-dom";
 import { genericEmailTemplate, genericEmailTemplateSubject } from "renderer/utils/contact";
+import { defaultInvoiceName, defaultInvoiceNumberFormat } from "renderer/utils/invoice";
 import { getSettings, setSettings } from "renderer/utils/settings";
 
 export const loader = async () => {
@@ -34,8 +35,6 @@ function Settings() {
     settings ?? JSON.parse(typeof window !== "undefined" ? window?.localStorage?.getItem("settings") || "{}" : "{}"),
   );
 
-  const defaultInvoiceName = `{INVOICE NUMBER} - {MY COMPANY NAME} - {CLIENT NAME} - {INVOICE TITLE}.pdf`;
-  const defaultInvoiceNumberFormat = `{YYYY}-{MM}-{INC}`;
   const [saveDisabled, setSaveDisabled] = useState(() => {
     if (defaultInvoiceName !== defaultValues.current.invoice_file_name) return false;
     if (defaultInvoiceNumberFormat !== defaultValues.current.invoice_number_format) return false;
