@@ -2,34 +2,42 @@ import dayjs from "dayjs";
 import { useRef, useState } from "react";
 import { Form, redirect, useLoaderData } from "react-router-dom";
 import { genericEmailTemplate, genericEmailTemplateSubject } from "renderer/utils/contact";
+import { getFolderPath } from "renderer/utils/fileManagement";
 import { defaultInvoiceName, defaultInvoiceNumberFormat } from "renderer/utils/invoice";
 import { getSettings, setSettings } from "renderer/utils/settings";
 
 export const loader = async () => {
   const settings = await getSettings();
-  return { settings };
+  const folderPath = await getFolderPath();
+  console.log({ settings, folderPath });
+  return { settings, folderPath };
 };
 
 export const action = async ({ request }) => {
   const formData = await request.formData();
   const updatedSettings = Object.fromEntries(formData);
-  console.log("is onboardin", formData.get("onboarding"));
   if (updatedSettings.onboarding) delete updatedSettings.onboarding;
   const settings = await setSettings(updatedSettings);
-  if (JSON.stringify(settings) !== JSON.stringify(updatedSettings)) {
-    console.log("Something went wrong", settings, updatedSettings);
-    return { ok: false, status: 500, body: "Something went wrong" };
+  if (settings.invoices_folder_path_error) {
+    return window.electron.ipcRenderer.invoke(
+      "dialog:showMessageBoxSync",
+      "The path you provided is not a valid path. Please double check that the folder exists.",
+    );
   }
-  console.log("LALALA");
+  if (JSON.stringify(settings) !== JSON.stringify(updatedSettings)) {
+    return window.electron.ipcRenderer.invoke(
+      "dialog:showMessageBoxSync",
+      "The file was not saved. Please contact support.",
+    );
+  }
   if (formData.get("onboarding")) {
-    console.log("MOI");
     return redirect("/me");
   }
   return { ok: true };
 };
 
 function Settings() {
-  const { settings } = useLoaderData();
+  const { settings, folderPath } = useLoaderData();
 
   const defaultValues = useRef(
     settings ?? JSON.parse(typeof window !== "undefined" ? window?.localStorage?.getItem("settings") || "{}" : "{}"),
@@ -43,7 +51,7 @@ function Settings() {
     return true;
   });
 
-  if (!defaultValues.current.invoices_folder_path) {
+  if (!folderPath) {
     return (
       <Form
         className="flex h-full w-full flex-col"
@@ -61,7 +69,7 @@ function Settings() {
         </div>
         <div className="flex-1 flex flex-col items-center justify-center">
           <h2 className="text-lg font-semibold max-w-screen-lg text-center">
-            <label htmlFor="invoices_folder_path">
+            <label htmlFor="kiss_my_invoices_folder_path">
               Before you start creating clients and invoices,
               <br />
               please tell us a path where we can save them on your computer:
@@ -70,12 +78,12 @@ function Settings() {
           <div className="flex min-w-md basis-1/2 flex-col gap-4 p-4">
             <div className="mb-3 flex max-w-screen-lg flex-col-reverse items-center gap-2">
               <input
-                name="invoices_folder_path"
+                name="kiss_my_invoices_folder_path"
                 type="text"
-                id="invoices_folder_path"
+                id="kiss_my_invoices_folder_path"
                 className="outline-main block w-full rounded border border-black bg-transparent p-2.5 text-black transition-all"
                 placeholder="/Users/arnaudambroselli/Pro/__admin/ZZP/My invoices"
-                defaultValue={defaultValues.current.invoices_folder_path}
+                defaultValue={folderPath}
               />
             </div>
             <button
@@ -122,24 +130,21 @@ function Settings() {
         </div>
       </div>
       <div className="flex flex-col bg-white border-y-2">
-        <details
-          open={!defaultValues.current.invoices_folder_path}
-          className="flex min-w-md grow basis-1/2 flex-col gap-4 p-4"
-        >
+        <details open={!folderPath} className="flex min-w-md grow basis-1/2 flex-col gap-4 p-4">
           <summary>
             <h2 className="inline text-lg font-semibold">Files and folders required settings</h2>
           </summary>
           <div className="pt-2 pl-4">
             <div className="mb-3 flex max-w-screen-lg flex-col-reverse gap-2">
               <input
-                name="invoices_folder_path"
+                name="kiss_my_invoices_folder_path"
                 type="text"
-                id="invoices_folder_path"
+                id="kiss_my_invoices_folder_path"
                 className="outline-main block w-full rounded border border-black bg-transparent p-2.5 text-black transition-all"
                 placeholder="/Users/arnaudambroselli/Pro/__admin/ZZP/My invoices"
-                defaultValue={defaultValues.current.invoices_folder_path}
+                defaultValue={folderPath}
               />
-              <label htmlFor="invoices_folder_path">Invoices folder path</label>
+              <label htmlFor="kiss_my_invoices_folder_path">Invoices folder path</label>
             </div>
             <div className="mb-3 flex max-w-screen-lg flex-col-reverse gap-2">
               <input

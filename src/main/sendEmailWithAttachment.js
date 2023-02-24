@@ -9,7 +9,7 @@ ipcMain.handle("app:save-pdf", async (_event, pdfData, filePathAndName) => {
   return filePathAndName;
 });
 
-ipcMain.handle("app:send-email", async (_event, { to, cc, subject, body, filePathAndName }) => {
+ipcMain.handle("app:send-email", async (_event, { to, cc, bcc, subject, body, filePathAndName }) => {
   const escapedSubject = subject.replace(/"/g, '\\"');
   const escapedBody = body
     .replace(/"/g, '\\"')
@@ -20,8 +20,36 @@ ipcMain.handle("app:send-email", async (_event, { to, cc, subject, body, filePat
   const appleScript = `osascript -e 'tell application "Mail"
   set newMessage to make new outgoing message with properties {subject:"${escapedSubject}", content:"${escapedBody}", visible:true}
   tell newMessage
-    make new to recipient at end of to recipients with properties {address:"${to}"}
-    ${cc ? `make new cc recipient at end of cc recipients with properties {address:"${cc}"}` : ""}
+    ${
+      to
+        ? `repeat with email in {${to
+            .split(",")
+            .map((email) => `"${email}"`)
+            .join(", ")}}
+      make new to recipient at end of to recipients with properties {address:email}
+    end repeat`
+        : ""
+    }
+    ${
+      cc
+        ? `repeat with email in {${cc
+            .split(",")
+            .map((email) => `"${email}"`)
+            .join(", ")}}
+      make new cc recipient at end of cc recipients with properties {address:email}
+    end repeat`
+        : ""
+    }
+    ${
+      bcc
+        ? `repeat with email in {${bcc
+            .split(",")
+            .map((email) => `"${email}"`)
+            .join(", ")}}
+      make new cc recipient at end of cc recipients with properties {address:email}
+    end repeat`
+        : ""
+    }
     set theAttachment to "${escapedFilePath}"
     tell content
       make new attachment with properties {file name:theAttachment} at after the last word of the last paragraph

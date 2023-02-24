@@ -11,6 +11,7 @@ const getItemPrice =
 export const getItemPriceWithNoVat = getItemPrice(false);
 export const getItemPriceWithVat = getItemPrice(true);
 export const getCurrencySymbol = () => {
+  if (!window.countryCode) window.countryCode = "FR";
   const currency = countries.find((c) => c.code === window.countryCode)?.currency;
   const options = { style: "currency", currency };
   const parts = new Intl.NumberFormat(window.countryCode, options).formatToParts(1);
@@ -23,7 +24,7 @@ export const formatToCurrency = (number) => {
   const currency = countries.find((c) => c.code === window.countryCode)?.currency;
   return Intl.NumberFormat(window.countryCode, {
     style: "currency",
-    currency: "EUR",
+    currency,
     minimumSignificantDigits: 1,
   }).format(number);
 };

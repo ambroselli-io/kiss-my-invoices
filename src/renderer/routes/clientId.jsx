@@ -4,17 +4,23 @@ import useSetDocumentTitle from "renderer/services/useSetDocumentTitle";
 import { countries } from "renderer/utils/countries";
 import { readFile, writeFile } from "renderer/utils/fileManagement";
 import Select from "react-select";
+import { genericEmailTemplate, genericEmailTemplateSubject } from "renderer/utils/contact";
 
 export const loader = async ({ params }) => {
+  const settings = await readFile("settings.json");
   const clients = await readFile("clients.json", { default: [] });
   const client =
     params.clientId !== "new" ? clients.find((_client) => _client.organisation_number === params.clientId) : null;
-  return { client };
+  return { client, settings };
 };
 
 export const action = async ({ request, params }) => {
   const clients = await readFile("clients.json", { default: [] });
+  const oldClient = clients.find((_client) => _client.organisation_number === params.clientId);
   const updatedClient = Object.fromEntries(await request.formData());
+  if (!updatedClient.country_code) {
+    updatedClient.country_code = oldClient?.country_code;
+  }
   if (updatedClient.code) {
     // remove all spaces
     updatedClient.code = updatedClient.code.replace(/\s/g, "").toUpperCase();
@@ -32,7 +38,7 @@ export const action = async ({ request, params }) => {
 };
 
 function Client() {
-  const { client } = useLoaderData();
+  const { client, settings } = useLoaderData();
   const [saveDisabled, setSaveDisabled] = useState(true);
 
   const defaultValues = useMemo(() => {
@@ -49,6 +55,7 @@ function Client() {
       className="flex h-full w-full flex-col bg-blue-200"
       key={JSON.stringify(defaultValues)}
       method="post"
+      id="client-form"
       onChange={(e) => {
         const json = Object.fromEntries(new FormData(e.currentTarget));
         if (typeof window !== "undefined") {
@@ -89,7 +96,9 @@ function Client() {
               defaultValue={defaultValues.organisation_name}
               key={defaultValues.organisation_name}
             />
-            <label htmlFor="organisation_name">Name</label>
+            <label htmlFor="organisation_name">
+              Name <sup>*</sup>
+            </label>
           </div>
           <div className="mb-3 flex max-w-lg flex-col-reverse gap-2">
             <input
@@ -114,7 +123,9 @@ function Client() {
               defaultValue={defaultValues.organisation_number_type}
               key={defaultValues.organisation_number_type}
             />
-            <label htmlFor="organisation_number_type">Organisation number type (KVK, SIRET, ...)</label>
+            <label htmlFor="organisation_number_type">
+              Organisation number type (KVK, SIRET, ...) <sup>*</sup>
+            </label>
           </div>
           <div className="mb-3 flex max-w-lg flex-col-reverse gap-2">
             <input
@@ -126,7 +137,9 @@ function Client() {
               defaultValue={defaultValues.organisation_number}
               key={defaultValues.organisation_number}
             />
-            <label htmlFor="organisation_number">Organisation number</label>
+            <label htmlFor="organisation_number">
+              Organisation number <sup>*</sup>
+            </label>
           </div>
           <div className="mb-3 flex max-w-lg flex-col-reverse gap-2">
             <input
@@ -161,8 +174,11 @@ function Client() {
               placeholder="1234 Main St"
               defaultValue={defaultValues.address}
               key={defaultValues.address}
+              rows={1}
             />
-            <label htmlFor="address">Street and street number and all</label>
+            <label htmlFor="address">
+              Street and street number and all <sup>*</sup>
+            </label>
           </div>
           <div className="mb-3 flex max-w-lg flex-col-reverse gap-2">
             <input
@@ -174,7 +190,9 @@ function Client() {
               defaultValue={defaultValues.city}
               key={defaultValues.city}
             />
-            <label htmlFor="city">City</label>
+            <label htmlFor="city">
+              City <sup>*</sup>
+            </label>
           </div>
           <div className="mb-3 flex max-w-lg flex-col-reverse gap-2">
             <input
@@ -196,12 +214,14 @@ function Client() {
               defaultInputValue={countries.find((c) => c.code === defaultValues.country_code)?.country}
               getOptionValue={(option) => option.code}
               getOptionLabel={(option) => option.country}
-              form="me"
+              form="client-form"
               onChange={() => {
                 setSaveDisabled(false);
               }}
             />
-            <label htmlFor="country_code">Country</label>
+            <label htmlFor="country_code">
+              Country <sup>*</sup>
+            </label>
           </div>
         </fieldset>
         <fieldset className="flex min-w-md grow basis-1/3 flex-col gap-4 p-4">
@@ -223,6 +243,7 @@ function Client() {
               name="email"
               type="email"
               id="email"
+              multiple
               className="outline-main block w-full rounded border border-black bg-transparent p-2.5 text-black transition-all"
               placeholder="ilike@froadmaps.com"
               defaultValue={defaultValues.email}
@@ -235,12 +256,26 @@ function Client() {
               name="email_cc"
               type="email"
               id="email_cc"
+              multiple
               className="outline-main block w-full rounded border border-black bg-transparent p-2.5 text-black transition-all"
               placeholder="ilike@froadmaps.com"
               defaultValue={defaultValues.email_cc}
               key={defaultValues.email_cc}
             />
             <label htmlFor="email_cc">Email CC</label>
+          </div>
+          <div className="mb-3 flex max-w-lg flex-col-reverse gap-2">
+            <input
+              name="email_bcc"
+              type="email"
+              multiple
+              id="email_bcc"
+              className="outline-main block w-full rounded border border-black bg-transparent p-2.5 text-black transition-all"
+              placeholder="ilike@froadmaps.com"
+              defaultValue={defaultValues.email_bcc}
+              key={defaultValues.email_bcc}
+            />
+            <label htmlFor="email_cc">Email BCC</label>
           </div>
           <div className="mb-3 flex max-w-lg flex-col-reverse gap-2">
             <input
@@ -255,16 +290,119 @@ function Client() {
             />
             <label htmlFor="phone">Phone</label>
           </div>
-          <div className="mb-3 flex max-w-lg flex-col-reverse gap-2">
-            <textarea
-              name="default_email_message"
-              id="default_email_message"
+          <details className="text-xs text-gray-500 pl-4 mb-4">
+            <summary className="-mr-4">
+              Click here to see the list of items you can use to make up your generic template email
+            </summary>
+            We&#39;ll replace the following items with the actual values (don&#39;t forget to add the curly brackets
+            around the item name):
+            <ul className="list-inside list-disc">
+              <li>
+                <code>{`{client.organisation_name}`}</code> - The client organisation name
+              </li>
+              <li>
+                <code>{`{client.code}`}</code> - The client code
+              </li>
+              <li>
+                <code>{`{client.address}`}</code> - The client address (street, street number, etc.)
+              </li>
+              <li>
+                <code>{`{client.city}`}</code> - The client city
+              </li>
+              <li>
+                <code>{`{client.zip}`}</code> - The client zip code
+              </li>
+              <li>
+                <code>{`{client.country}`}</code> - The client country
+              </li>
+              <li>
+                <code>{`{client.contact_name}`}</code> - The client contact name
+              </li>
+              <li>
+                <code>{`{client.phone}`}</code> - The client phone number
+              </li>
+              <li>
+                <code>{`{me.organisation_name}`}</code> - Your organisation name
+              </li>
+              <li>
+                <code>{`{me.organisation_number}`}</code> - Your organisation number
+              </li>
+              <li>
+                <code>{`{me.vat_number}`}</code> - Your VAT number
+              </li>
+              <li>
+                <code>{`{me.address}`}</code> - Your address (street, street number, etc.)
+              </li>
+              <li>
+                <code>{`{me.city}`}</code> - Your city
+              </li>
+              <li>
+                <code>{`{me.zip}`}</code> - Your zip code
+              </li>
+              <li>
+                <code>{`{me.country}`}</code> - Your country
+              </li>
+              <li>
+                <code>{`{me.contact_name}`}</code> - Your contact name
+              </li>
+              <li>
+                <code>{`{me.email}`}</code> - Your email
+              </li>
+              <li>
+                <code>{`{me.phone}`}</code> - Your phone number
+              </li>
+              <li>
+                <code>{`{me.website}`}</code> - Your website
+              </li>
+              <li>
+                <code>{`{me.description}`}</code> - Your description (job, passion, whatever)
+              </li>
+              <li>
+                <code>{`{invoice.title}`}</code> - The invoice title
+              </li>
+              <li>
+                <code>{`{invoice.invoice_number}`}</code> - The invoice number
+              </li>
+              <li>
+                <code>{`{invoice.emission_date}`}</code> - The invoice date
+              </li>
+              <li>
+                <code>{`{invoice.due_date}`}</code> - The invoice due date
+              </li>
+              <li>
+                <code>{`{invoice.amount}`}</code> - The invoice amount
+              </li>
+            </ul>
+          </details>
+          <div className="mb-3 flex max-w-screen-lg flex-col-reverse gap-2">
+            <input
+              name="email_template_subject"
+              type="text"
+              id="email_template_subject"
               className="outline-main block w-full rounded border border-black bg-transparent p-2.5 text-black transition-all"
-              placeholder="Hello {CLIENT NAME},"
-              defaultValue={defaultValues.default_email_message}
-              key={defaultValues.default_email_message}
+              placeholder={settings.generic_email_template_subject || genericEmailTemplateSubject}
+              defaultValue={
+                defaultValues.email_template_subject ||
+                settings.generic_email_template_subject ||
+                genericEmailTemplateSubject
+              }
+              key={defaultValues.email_template_subject || genericEmailTemplateSubject}
             />
-            <label htmlFor="default_email_message">Default email message</label>
+            <label htmlFor="email_template_subject">Default Email Subject</label>
+          </div>
+          <div className="mb-3 flex max-w-screen-lg flex-col-reverse gap-2">
+            <textarea
+              name="email_template_body"
+              id="email_template_body"
+              className="outline-main block w-full rounded border border-black bg-transparent p-2.5 text-black transition-all"
+              placeholder={settings.generic_email_template_body || genericEmailTemplate}
+              key={defaultValues.email_template_body || genericEmailTemplate}
+              defaultValue={
+                defaultValues.email_template_body || settings.generic_email_template_body || genericEmailTemplate
+              }
+              rows={20}
+            />
+            <label htmlFor="email_template_body">Default Email Body</label>
           </div>
         </fieldset>
       </div>

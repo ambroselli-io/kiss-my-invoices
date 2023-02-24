@@ -1,15 +1,7 @@
 // get folder path
-export const getInvoicesPath = async () => {
-  const saved_invoices_folder_path = await window.electron.ipcRenderer.invoke("app:get-settings");
+export const getFolderPath = async () => {
+  const saved_invoices_folder_path = await window.electron.ipcRenderer.invoke("app:get-folder-path");
   return saved_invoices_folder_path;
-};
-
-// copy file
-export const setInvoicesPath = async (invoices_folder_path: string) => {
-  const settings = await window.electron.ipcRenderer.invoke("app:save-settings", {
-    invoices_folder_path,
-  });
-  return settings.invoices_folder_path;
 };
 
 // copy file

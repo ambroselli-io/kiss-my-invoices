@@ -1,9 +1,9 @@
-import { redirect, useFetcher, useLoaderData, useNavigate } from "react-router-dom";
+import { Link, redirect, useFetcher, useLoaderData, useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
 import html2pdf from "html2pdf.js";
 import React, { useMemo, useRef, useState } from "react";
 import CreatableSelect from "react-select/creatable";
-import { readFile, writeFile } from "renderer/utils/fileManagement";
+import { getFolderPath, readFile, writeFile } from "renderer/utils/fileManagement";
 import useSetDocumentTitle from "renderer/services/useSetDocumentTitle";
 import OpenInNewWindowIcon from "renderer/components/OpenInNewWindowIcon";
 import {
@@ -28,6 +28,7 @@ import { countries } from "renderer/utils/countries";
 
 export const loader = async ({ params }) => {
   const settings = await getSettings();
+  const folderPath = await getFolderPath();
   const me = await readFile("me.json", { default: {} });
   window.countryCode = me?.country_code;
   const clients = await readFile("clients.json", { default: [] });
@@ -36,14 +37,16 @@ export const loader = async ({ params }) => {
     params.invoice_number !== "new"
       ? invoices.find((_invoice) => _invoice.invoice_number === params.invoice_number)
       : null;
-  return { settings, invoice, invoices, clients, me };
+
+  return { settings, invoice, invoices, clients, me, folderPath };
 };
 
 export const action = async ({ request, params }) => {
   const invoices = await readFile("invoices.json", { default: [] });
-
   const form = await request.formData();
-  const updatedInvoice = invoices.find((_invoice) => _invoice.invoice_number === params.invoice_number) ?? {};
+  const updatedInvoice = structuredClone(
+    invoices.find((_invoice) => _invoice.invoice_number === params.invoice_number) ?? {},
+  );
   if (form.get("invoice_number")) updatedInvoice.invoice_number = form.get("invoice_number");
   if (form.get("client")) {
     updatedInvoice.client = form.get("client");
@@ -71,13 +74,14 @@ export const action = async ({ request, params }) => {
           .sort(sortInvoices),
   );
   if (params.invoice_number !== updatedInvoice.invoice_number) {
+    console.log("redirecting");
     return redirect(`/invoice/${updatedInvoice.invoice_number}`);
   }
   return { ok: true };
 };
 
 function Invoice() {
-  const { invoices, invoice, clients, me, settings } = useLoaderData();
+  const { invoices, invoice, clients, me, settings, folderPath } = useLoaderData();
 
   const defaultItem = {
     title: "",
@@ -155,6 +159,60 @@ function Invoice() {
       });
     setIsPrinting(false);
     return pdfData;
+
+    /*
+
+    chatGPT proposal for not aving the greyed names in Finder
+
+    const generatePdf = async () => {
+  const invoiceFileName = getInvoiceName({ invoice, me, settings, client });
+  const opt = {
+    margin: 0,
+    filename: invoiceFileName,
+    image: { type: "jpeg", quality: 0.98 },
+    html2canvas: { scale: 2 },
+    jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+  };
+  setIsPrinting(true);
+  html2pdf()
+    .from(printableAreaRef.current)
+    .set(opt)
+    .output("datauristring") // Use output method with 'datauristring' option
+    .then((pdfData) => {
+      setIsPrinting(false);
+      const options = {
+        title: "Save PDF",
+        defaultPath: invoiceFileName,
+        filters: [
+          {
+            name: "PDF Files",
+            extensions: ["pdf"],
+          },
+        ],
+      };
+      const filePath = dialog.showSaveDialogSync(options);
+      if (filePath) {
+        fs.writeFile(filePath, Buffer.from(pdfData, "base64"), (err) => {
+          if (err) {
+            console.log(err);
+          }
+        });
+      }
+    })
+    .catch((err) => {
+      setIsPrinting(false);
+      console.log(err);
+    });
+};
+In this example, we use the output() method with the datauristring option to generate the PDF data as a base64-encoded string. We then use the dialog.showSaveDialogSync() method to prompt the user to select a save location and filename for the PDF. Finally, we use the fs.writeFile() method to write the PDF data to the selected file path.
+
+This should ensure that the PDF file is saved with the desired filename and prevent the greyed-out name issue on macOS.
+
+
+
+
+
+    */
   };
 
   return (
@@ -172,7 +230,13 @@ function Invoice() {
             type="button"
             onClick={() => {
               if (typeof window !== "undefined") {
-                window.print();
+                setIsPrinting(true);
+                setTimeout(() => {
+                  window.print();
+                  setTimeout(() => {
+                    setIsPrinting(false);
+                  });
+                });
               }
             }}
           >
@@ -190,10 +254,10 @@ function Invoice() {
             className="rounded border py-2 px-12 bg-black text-white"
             type="button"
             onClick={async () => {
-              const pdfData = await generatePdf(settings.invoices_folder_path);
+              const pdfData = await generatePdf(folderPath);
 
               const invoiceFileName = getInvoiceName({ invoice, me, settings, client });
-              const filePathAndName = `${settings.invoices_folder_path}/${invoiceFileName}`;
+              const filePathAndName = `${folderPath}/${invoiceFileName}`;
 
               const confirmedPathName = await window.electron.ipcRenderer.invoke(
                 "app:save-pdf",
@@ -215,6 +279,7 @@ function Invoice() {
                 from: me.email,
                 to: client.email,
                 cc: client.email_cc,
+                bcc: client.email_bcc,
                 subject,
                 body,
                 filePathAndName,
@@ -227,11 +292,7 @@ function Invoice() {
         </div>
       </div>
       <ButtonsSatus className="print:hidden" invoice={invoice} invoiceNumber={invoiceNumber} alwaysShowAll />
-      <div
-        className={["h-a4 w-a4 m-auto mb-10 mt-2 max-w-3xl border-2 print:border-none border-gray-500 bg-white"].join(
-          " ",
-        )}
-      >
+      <div className="h-a4 w-a4 m-auto mb-10 mt-2 max-w-3xl border-2 print:border-none border-gray-500 bg-white">
         <div
           ref={printableAreaRef}
           className="h-a4 w-a4 max-w-3xl text-base text-gray-600 overflow-hidden flex flex-col p-8"
@@ -250,6 +311,7 @@ function Invoice() {
                   size={invoiceNumber.length}
                   onBlur={(e) => {
                     const form = new FormData();
+                    console.log("CHANGE FUCKING INVOICE NUMBER");
                     form.append("invoice_number", e.currentTarget.value);
                     form.append("from", "invoice number");
                     invoiceFetcher.submit(form, { method: "post" });
@@ -296,29 +358,48 @@ function Invoice() {
             </p>
           </invoiceFetcher.Form>
           <div className="mb-10 flex justify-between">
-            <p>
-              <b>{me?.organisation_name}</b>
-              <br />
-              {me?.address}
-              <br />
-              {me?.zip} {me?.city}
-              <br />
-              {countries.find((c) => c.code === me.country_code)?.country}
-              <br />
-              {me?.organisation_number_type}: {me?.organisation_number}
-              {!!me?.vat_number?.length && (
-                <>
+            {[
+              "organisation_name",
+              "address",
+              "city",
+              "country_code",
+              "organisation_number_type",
+              "organisation_number",
+            ].filter((_field) => !me[_field]).length ? (
+              <Link
+                to="/me"
+                className="flex items-center justify-center rounded border-2 border-yellow-400 bg-yellow-100 p-2 text-center text-gray-400"
+              >
+                <p>
+                  <u>Click here</u>
                   <br />
-                  VAT: {me?.vat_number}
-                </>
-              )}
-            </p>
-
+                  to finish setup your profile
+                </p>
+              </Link>
+            ) : (
+              <p>
+                <b>{me?.organisation_name}</b>
+                <br />
+                {me?.address}
+                <br />
+                {me?.zip} {me?.city}
+                <br />
+                {countries.find((c) => c.code === me?.country_code)?.country}
+                <br />
+                {me?.organisation_number_type}: {me?.organisation_number}
+                {!!me?.vat_number?.length && (
+                  <>
+                    <br />
+                    VAT: {me?.vat_number}
+                  </>
+                )}
+              </p>
+            )}
             <div className="text-right">
               {!isPrinting && (
                 <CreatableSelect
                   options={clients}
-                  className="min-w-[16rem]"
+                  className="min-w-[16rem] print:hidden"
                   onChange={(_client) => {
                     const form = new FormData();
                     form.append("client", _client.organisation_number);
@@ -334,13 +415,31 @@ function Invoice() {
                   formatOptionLabel={ClientOption}
                 />
               )}
-              {client?.organisation_name && (
+              {[
+                "organisation_name",
+                "address",
+                "city",
+                "country_code",
+                "organisation_number_type",
+                "organisation_number",
+              ].filter((_field) => !client[_field]).length ? (
+                <Link
+                  to={`/client/${client?.organisation_number}`}
+                  className="flex items-center justify-center rounded border-2 border-yellow-400 bg-yellow-100 p-2 text-center text-gray-400"
+                >
+                  <p>
+                    <u>Click here</u>
+                    <br />
+                    to complete this client&#39;s informations
+                  </p>
+                </Link>
+              ) : (
                 <p className="text-right">
                   {isPrinting && (
-                    <>
+                    <div className={isPrinting ? "" : "hidden"}>
                       <b>{client?.organisation_name}</b>
                       <br />
-                    </>
+                    </div>
                   )}
                   {client?.address}
                   <br />
@@ -430,9 +529,48 @@ function Invoice() {
             <p className="text-right pr-3">{getFormattedTotalPrice(items)}</p>
           </div>
           <div className="mt-auto flex justify-start gap-4">
-            <p>Payment details:</p>
-            <p>
-              {settings.payment_details?.split("\n").map((line) => {
+            {!settings?.payment_details ? (
+              <Link
+                to="/settings"
+                className="w-full flex items-center justify-start rounded border-2 border-yellow-400 bg-yellow-100 p-2 text-center text-gray-400"
+              >
+                <p className="text-left">
+                  <u>Click here</u>
+                  <br />
+                  to setup your payment details
+                </p>
+              </Link>
+            ) : (
+              <>
+                <p>Payment details:</p>
+                <p>
+                  {settings.payment_details?.split("\n").map((line) => {
+                    return (
+                      <React.Fragment key={line}>
+                        {line}
+                        <br />
+                      </React.Fragment>
+                    );
+                  })}
+                </p>
+              </>
+            )}
+          </div>
+          {!settings?.payment_terms ? (
+            <Link
+              to="/settings"
+              className="mt-10 w-full flex items-center justify-start rounded border-2 border-yellow-400 bg-yellow-100 p-2 text-center text-gray-400"
+            >
+              <p className="text-left">
+                <u>Click here</u>
+                <br />
+                to setup your payment terms
+              </p>
+            </Link>
+          ) : (
+            <p className="text-sm mt-10">
+              <strong>Payment terms:</strong>{" "}
+              {settings.payment_terms?.split("\n").map((line) => {
                 return (
                   <React.Fragment key={line}>
                     {line}
@@ -441,18 +579,8 @@ function Invoice() {
                 );
               })}
             </p>
-          </div>
-          <p className="text-sm mt-10">
-            <strong>Payment terms:</strong>{" "}
-            {settings.payment_terms?.split("\n").map((line) => {
-              return (
-                <React.Fragment key={line}>
-                  {line}
-                  <br />
-                </React.Fragment>
-              );
-            })}
-          </p>
+          )}
+
           <p className="mt-10 w-full text-center text-xs">
             {me.organisation_name} - {me.address} - {me.zip} {me.city} -{" "}
             {countries.find((c) => c.code === me.country_code)?.country}

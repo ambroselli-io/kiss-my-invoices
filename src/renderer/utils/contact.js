@@ -50,11 +50,12 @@ const computeEmailTemplate = ({ template, client, invoice, me }) => {
 };
 
 export const computeEmailBody = ({ settings, client, invoice, me }) => {
-  const template = settings.generic_email_template_body || genericEmailTemplate;
+  const template = client.email_template_body || settings.generic_email_template_body || genericEmailTemplate;
   return computeEmailTemplate({ template, client, invoice, me });
 };
 
 export const computeEmailSubject = ({ settings, client, invoice, me }) => {
-  const template = settings.generic_email_template_subject || genericEmailTemplateSubject;
+  const template =
+    client.email_template_subject || settings.generic_email_template_subject || genericEmailTemplateSubject;
   return computeEmailTemplate({ template, client, invoice, me });
 };

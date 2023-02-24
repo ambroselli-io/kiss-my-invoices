@@ -21,54 +21,27 @@ const store = new Store({
         },
       },
     },
-    settings: {
-      type: "object",
-      properties: {
-        invoices_folder_path: {
-          type: "string",
-        },
-        invoice_file_name: {
-          type: "string",
-        },
-        invoice_number_format: {
-          type: "string",
-        },
-        generic_email_template_body: {
-          type: "string",
-        },
-        generic_email_template_subject: {
-          type: "string",
-        },
-        payment_details: {
-          type: "string",
-        },
-        payment_terms: {
-          type: "string",
-        },
-      },
+    kiss_my_invoices_folder_path: {
+      type: "string",
     },
   },
 });
 
-ipcMain.handle("app:save-settings", async (_event, settings) => {
-  store.set("settings", settings);
-  return store.get("settings");
+ipcMain.handle("app:save-folder-path", async (_event, kiss_my_invoices_folder_path) => {
+  if (!fs.existsSync(kiss_my_invoices_folder_path)) {
+    return null;
+  }
+  store.set("kiss_my_invoices_folder_path", kiss_my_invoices_folder_path);
+  return store.get("kiss_my_invoices_folder_path");
 });
 
-ipcMain.handle("app:get-settings", async () => {
-  let settings = store.get("settings");
-  // check if invoices_folder_path is a real path)
-  if (!settings) {
-    settings = {};
-    store.set("settings", settings);
+ipcMain.handle("app:get-folder-path", async () => {
+  const path = store.get("kiss_my_invoices_folder_path");
+  if (!path) return null;
+  if (!fs.existsSync(path)) {
+    return null;
   }
-  if (settings.invoices_folder_path) {
-    if (!fs.existsSync(settings.invoices_folder_path)) {
-      settings.invoices_folder_path_error = true;
-    }
-  }
-
-  return settings;
+  return path;
 });
 
 module.exports = store;

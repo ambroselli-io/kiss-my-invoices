@@ -6,16 +6,15 @@ const chokidar = require("chokidar");
 const store = require("./store");
 
 const getFolderPath = () => {
-  const settings = store.get("settings");
-  return settings?.invoices_folder_path;
+  return store.get("kiss_my_invoices_folder_path");
 };
 // create a file
 ipcMain.handle("app:write-file", async (_event, { fileName, content }) => {
-  const invoices_folder_path = getFolderPath();
-  if (!fs.existsSync(invoices_folder_path)) {
+  const kiss_my_invoices_folder_path = getFolderPath();
+  if (!fs.existsSync(kiss_my_invoices_folder_path)) {
     return null;
   }
-  const filePath = path.resolve(invoices_folder_path, fileName);
+  const filePath = path.resolve(kiss_my_invoices_folder_path, fileName);
 
   if (!fs.existsSync(filePath)) {
     // create the file
@@ -26,11 +25,11 @@ ipcMain.handle("app:write-file", async (_event, { fileName, content }) => {
 
 // read file
 ipcMain.handle("app:read-file", async (_event, { fileName, default: defaultContent }) => {
-  const invoices_folder_path = getFolderPath();
-  if (!fs.existsSync(invoices_folder_path)) {
+  const kiss_my_invoices_folder_path = getFolderPath();
+  if (!fs.existsSync(kiss_my_invoices_folder_path)) {
     return null;
   }
-  const filePath = path.resolve(invoices_folder_path, fileName);
+  const filePath = path.resolve(kiss_my_invoices_folder_path, fileName);
 
   if (!fs.existsSync(filePath)) {
     // create the file
@@ -43,11 +42,11 @@ ipcMain.handle("app:read-file", async (_event, { fileName, default: defaultConte
 
 // delete a file
 ipcMain.handle("app:delete-file", async (_event, { fileName }) => {
-  const invoices_folder_path = getFolderPath();
-  if (!fs.existsSync(invoices_folder_path)) {
+  const kiss_my_invoices_folder_path = getFolderPath();
+  if (!fs.existsSync(kiss_my_invoices_folder_path)) {
     return null;
   }
-  const filePath = path.resolve(invoices_folder_path, fileName);
+  const filePath = path.resolve(kiss_my_invoices_folder_path, fileName);
 
   if (fs.existsSync(filePath)) {
     fs.removeSync(filePath);

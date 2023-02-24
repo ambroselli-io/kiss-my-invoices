@@ -1,4 +1,12 @@
-import { createHashRouter, Link, NavLink, Outlet, RouterProvider, useLoaderData, useMatches } from "react-router-dom";
+import {
+  createHashRouter,
+  NavLink,
+  Outlet,
+  redirect,
+  RouterProvider,
+  useLoaderData,
+  useMatches,
+} from "react-router-dom";
 import Home, { loader as homeLoader } from "./routes/_index";
 import Client, { loader as clientLoader, action as clientAction } from "./routes/clientId";
 import Me, { loader as meLoader, action as meAction } from "./routes/me";
@@ -10,17 +18,26 @@ import "./styles/reset.css";
 import { getSettings } from "./utils/settings";
 import type { Settings as SettingsType } from "./utils/settings";
 import Clients, { loader as clientsLoader } from "./routes/clients";
+import { getFolderPath } from "./utils/fileManagement";
 
-const loader = async (): Promise<SettingsType> => {
+const loader = async ({
+  request,
+}: {
+  request: any;
+}): Promise<Response | { settings: SettingsType; folderPath: string }> => {
   const settings = await getSettings();
-  return settings;
+  const folderPath = await getFolderPath();
+  const url = new URL(request.url);
+  const isSettings = url.pathname === "/settings";
+  if (!folderPath && !isSettings) {
+    return redirect("/settings");
+  }
+  return { settings, folderPath };
 };
 
 function Root() {
-  const settings: SettingsType = useLoaderData();
+  const { folderPath } = useLoaderData();
   const matches = useMatches();
-  const invoices_folder_path = settings?.invoices_folder_path;
-  const invoices_folder_path_error = settings?.invoices_folder_path_error;
 
   // check if match.patname matched /invoice/:invoice_number, invoice_number is any string
   // and get the invoice_number
@@ -30,13 +47,10 @@ function Root() {
   // const isClient = matches[1]?.pathname?.match(/^\/client\/.+/);
   // const clientNumber = isClient && isClient[0].replace("/client/", "");
 
-  const isSettings = matches[1]?.pathname === "/settings";
-  const showSettingsError = !!invoices_folder_path_error || (!isSettings && !invoices_folder_path);
-
   return (
     <div className="h-full w-full">
-      {!!invoices_folder_path && (
-        <nav className="w-full text-sm border-b border-gray-400 flex print:hidden">
+      {!!folderPath && (
+        <nav className="w-full text-sm border-b-2 z-50 flex sticky top-0 bg-white print:hidden">
           <NavLink to="settings" className="px-5 py-2 [&.active_.kiss]:!visible">
             <span className="kiss invisible mr-2">💋</span>My settings
           </NavLink>
@@ -61,11 +75,12 @@ function Root() {
         )} */}
         </nav>
       )}
-      {showSettingsError && (
+      {/* {showSettingsError && (
         <div className="w-full p-4">
           <div
             className={[
-              !invoices_folder_path && "rounded border-2 border-yellow-400 bg-yellow-100 p-2 text-center text-gray-400",
+              !folderPath &&
+                "rounded border-2 border-yellow-400 bg-yellow-100 p-2 text-center text-gray-400",
               !!invoices_folder_path_error &&
                 "rounded border-2 border-red-500 bg-red-200 p-2 text-center text-gray-700",
             ].join(" ")}
@@ -90,7 +105,7 @@ function Root() {
             </Link>
           </div>
         </div>
-      )}
+      )} */}
       <Outlet />
     </div>
   );

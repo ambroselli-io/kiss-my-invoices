@@ -12,7 +12,7 @@ export const sortInvoices = (a, b) => {
 
 export const getNextInvoiceNumber = (invoices) => {
   const lastInvoice = invoices[invoices.length - 1];
-  const lastInc = parseInt(lastInvoice.invoice_number.split("-").pop(), 10);
+  const lastInc = lastInvoice ? parseInt(lastInvoice.invoice_number.split("-").pop(), 10) : 0;
   const nextInc = lastInc + 1;
   return String(nextInc).padStart(3, "0");
 };

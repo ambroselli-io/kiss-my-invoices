@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { getFormattedTotalPretaxPrice, getFormattedTotalPrice, getFormattedTotalVAT } from "../../utils/prices";
+import { getFormattedTotalPrice } from "../../utils/prices";
 import { ButtonsSatus } from "./ButtonsSatus";
 
 function GoToInvoiceOnClick({ invoice, className, children }) {
@@ -38,7 +38,7 @@ export function InvoiceRow({ invoice, className }) {
       <GoToInvoiceOnClick invoice={invoice} className="border-x border-b-2 p-2">
         {getFormattedTotalPrice(invoice.items)}
       </GoToInvoiceOnClick>
-      <div className="border-x border-b-2 p-2">
+      <div className="border-x border-b-2 flex justify-center items-center">
         <ButtonsSatus invoice={invoice} invoiceNumber={invoice.invoice_number} />
       </div>
     </div>
