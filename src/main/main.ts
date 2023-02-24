@@ -25,6 +25,12 @@ class AppUpdater {
   constructor() {
     log.transports.file.level = "info";
     autoUpdater.logger = log;
+    autoUpdater.setFeedURL({
+      provider: "github",
+      repo: "kiss-my-invoices",
+      owner: "ambroselli-io",
+      releaseType: "release",
+    });
     autoUpdater.checkForUpdatesAndNotify();
   }
 }
@@ -112,7 +118,8 @@ const createWindow = async () => {
   mainWindow.on("resize", () => {
     // The event doesn't pass us the window size, so we call the `getBounds` method which returns an object with
     // the height, width, and x and y coordinates.
-    const { width, height } = mainWindow.getBounds();
+    const dimensions = mainWindow?.getBounds?.() ?? { height: 200, width: 200 };
+    const { width, height } = dimensions;
     // Now that we have them, save them using the `set` method.
     store.set("windowBounds", { width, height });
   });
@@ -132,10 +139,44 @@ const createWindow = async () => {
 };
 
 autoUpdater.on("update-available", () => {
+  console.log("update-available");
   mainWindow?.webContents.send("update_available");
 });
+
 autoUpdater.on("update-downloaded", () => {
-  mainWindow?.webContents.send("update_downloaded");
+  const dialogOpts = {
+    type: "info",
+    buttons: ["Restart", "Later"],
+    title: "Application Update",
+    message: process.platform === "win32" ? releaseNotes : releaseName,
+    detail: "A new version has been downloaded. Restart the application to apply the updates.",
+  };
+
+  dialog.showMessageBox(dialogOpts).then((returnValue) => {
+    if (returnValue.response === 0) autoUpdater.quitAndInstall();
+  });
+});
+
+autoUpdater.on("checking-for-update", () => {
+  console.log("Checking for update...");
+});
+autoUpdater.on("update-available", (info) => {
+  console.log("Update available.");
+});
+autoUpdater.on("update-not-available", (info) => {
+  console.log("Update not available.");
+});
+autoUpdater.on("error", (err) => {
+  console.log(`Error in auto-updater. ${err}`);
+});
+autoUpdater.on("download-progress", (progressObj) => {
+  let log_message = `Download speed: ${progressObj.bytesPerSecond}`;
+  log_message = `${log_message} - Downloaded ${progressObj.percent}%`;
+  log_message = `${log_message} (${progressObj.transferred}/${progressObj.total})`;
+  console.log(log_message);
+});
+autoUpdater.on("update-downloaded", (info) => {
+  console.log("Update downloaded");
 });
 
 app.on("window-all-closed", () => {
