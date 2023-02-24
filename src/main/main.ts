@@ -148,8 +148,8 @@ autoUpdater.on("update-downloaded", () => {
     type: "info",
     buttons: ["Restart", "Later"],
     title: "Application Update",
-    message: "No idea what to say here",
-    detail: "A new version has been downloaded. Restart the application to apply the updates.",
+    message: "A new version has been downloaded",
+    detail: "Restart the application to apply the updates.",
   };
 
   dialog.showMessageBox(dialogOpts).then((returnValue) => {
