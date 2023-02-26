@@ -72,17 +72,17 @@ const router = createBrowserRouter(
           errorElement: <ErrorBoundary />,
         },
         {
-          path: "legal",
+          path: "/legal",
           element: <Legal />,
         },
         {
-          path: "me",
+          path: "/me",
           element: <Me />,
           loader: meLoader,
           action: meAction,
         },
         {
-          path: "settings",
+          path: "/settings",
           element: <Settings />,
           loader: settingsLoader,
           action: settingsAction,
@@ -108,7 +108,7 @@ const router = createBrowserRouter(
     },
   ],
   {
-    basename: process.env.NODE_ENV === 'production' ? '/kiss-my-invoices/' : "/",
+    basename: process.env.NODE_ENV === 'production' ? '/kiss-my-invoices' : "/",
   }
   {
     // initialEntries: ["/", "/invoice/new", "/invoice/2023-02-004"],
