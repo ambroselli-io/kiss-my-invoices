@@ -14,5 +14,8 @@ export default defineConfig(({ command, mode, ssrBuild }) => {
     plugins: [react()],
     root: "src/renderer",
     base: "/kiss-my-invoices",
+    build: {
+      outDir: "../../dist",
+    },
   };
 });
