@@ -6,4 +6,4 @@ To stay up to date with all the latest news and product updates, make sure to fo
 
 ## License
 
-Kiss my Invoices is open-source under the GNU Affero General Public License Version 3 (AGPLv3) or any later version. You can [find it here](https://github.com/ambroselli-io/kiss-my-invoices/blob/master/LICENSE.md).
+Kiss my Invoices is open-source under the GNU Affero General Public License Version 3 (AGPLv3) or any later version. You can [find it here](https://github.com/ambroselli-io/kiss-my-invoices/blob/main/LICENSE).
