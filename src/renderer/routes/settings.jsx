@@ -1,19 +1,31 @@
 import dayjs from "dayjs";
 import { useRef, useState } from "react";
 import { Form, redirect, useLoaderData } from "react-router-dom";
-import { genericEmailTemplate, genericEmailTemplateSubject } from "renderer/utils/contact";
-import { getFolderPath } from "renderer/utils/fileManagement";
-import { defaultInvoiceName, defaultInvoiceNumberFormat } from "renderer/utils/invoice";
-import { getSettings, setSettings } from "renderer/utils/settings";
+import { genericEmailTemplate, genericEmailTemplateSubject } from "../utils/contact";
+import { getFolderPath } from "../utils/fileManagement";
+import { defaultInvoiceName, defaultInvoiceNumberFormat } from "../utils/invoice";
+import { getSettings, setSettings } from "../utils/settings";
 
-export const loader = async () => {
+export const webLoader = async () => {
+  const settings = JSON.parse(window.localStorage.getItem("settings.json") || "{}");
+  return { settings, forWeb: true };
+};
+
+export const webAction = async ({ request }) => {
+  const formData = await request.formData();
+  const updatedSettings = Object.fromEntries(formData);
+  if (updatedSettings.onboarding) delete updatedSettings.onboarding;
+  window.localStorage.setItem("settings.json", JSON.stringify(updatedSettings));
+  return { ok: true };
+};
+
+export const electronLoader = async () => {
   const settings = await getSettings();
   const folderPath = await getFolderPath();
-  console.log({ settings, folderPath });
   return { settings, folderPath };
 };
 
-export const action = async ({ request }) => {
+export const electronAction = async ({ request }) => {
   const formData = await request.formData();
   const updatedSettings = Object.fromEntries(formData);
   if (updatedSettings.onboarding) delete updatedSettings.onboarding;
@@ -37,7 +49,7 @@ export const action = async ({ request }) => {
 };
 
 function Settings() {
-  const { settings, folderPath } = useLoaderData();
+  const { settings, folderPath, forWeb } = useLoaderData();
 
   const defaultValues = useRef(
     settings ?? JSON.parse(typeof window !== "undefined" ? window?.localStorage?.getItem("settings") || "{}" : "{}"),
@@ -51,7 +63,7 @@ function Settings() {
     return true;
   });
 
-  if (!folderPath) {
+  if (!folderPath && !forWeb) {
     return (
       <Form
         className="flex h-full w-full flex-col"
@@ -135,17 +147,19 @@ function Settings() {
             <h2 className="inline text-lg font-semibold">Files and folders required settings</h2>
           </summary>
           <div className="pt-2 pl-4">
-            <div className="mb-3 flex max-w-screen-lg flex-col-reverse gap-2">
-              <input
-                name="kiss_my_invoices_folder_path"
-                type="text"
-                id="kiss_my_invoices_folder_path"
-                className="outline-main block w-full rounded border border-black bg-transparent p-2.5 text-black transition-all"
-                placeholder="/Users/arnaudambroselli/Pro/__admin/ZZP/My invoices"
-                defaultValue={folderPath}
-              />
-              <label htmlFor="kiss_my_invoices_folder_path">Invoices folder path</label>
-            </div>
+            {!forWeb && (
+              <div className="mb-3 flex max-w-screen-lg flex-col-reverse gap-2">
+                <input
+                  name="kiss_my_invoices_folder_path"
+                  type="text"
+                  id="kiss_my_invoices_folder_path"
+                  className="outline-main block w-full rounded border border-black bg-transparent p-2.5 text-black transition-all"
+                  placeholder="/Users/arnaudambroselli/Pro/__admin/ZZP/My invoices"
+                  defaultValue={folderPath}
+                />
+                <label htmlFor="kiss_my_invoices_folder_path">Invoices folder path</label>
+              </div>
+            )}
             <div className="mb-3 flex max-w-screen-lg flex-col-reverse gap-2">
               <input
                 name="invoice_file_name"

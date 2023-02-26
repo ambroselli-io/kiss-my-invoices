@@ -1,10 +1,22 @@
 import { Link, useLoaderData } from "react-router-dom";
-import { InvoiceRow } from "renderer/components/Invoice/InvoiceRow";
-import useSetDocumentTitle from "renderer/services/useSetDocumentTitle";
-import { readFile } from "renderer/utils/fileManagement";
-import { getInvoicesTotalPrice } from "renderer/utils/prices";
+import useSetDocumentTitle from "../services/useSetDocumentTitle";
+import { readFile } from "../utils/fileManagement";
+import { getInvoicesTotalPrice } from "../utils/prices";
 
-export const loader = async () => {
+export const webLoader = async () => {
+  const me = JSON.parse(window.localStorage.getItem("me.json") || "{}");
+  const invoices = JSON.parse(window.localStorage.getItem("invoices.json") || "[]");
+  const clients = JSON.parse(window.localStorage.getItem("clients.json") || "[]");
+  return {
+    me,
+    clients: clients.map((client) => ({
+      ...client,
+      invoices: invoices.filter((invoice) => invoice.client === client.organisation_number),
+    })),
+  };
+};
+
+export const electronLoader = async () => {
   const me = await readFile("me.json", { default: {} });
   const invoices = await readFile("invoices.json", { default: [] });
   const clients = await readFile("clients.json", { default: [] });
@@ -42,7 +54,7 @@ function Clients() {
           </Link>
         </div>
       </div>
-      {clients?.length && (
+      {!!clients?.length && (
         <main className="flex flex-1 basis-full flex-col justify-start pb-4 text-xs md:pb-8 ">
           <div className="relative w-full mx-auto border-x bg-white">
             <div

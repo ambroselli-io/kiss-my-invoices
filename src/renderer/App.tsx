@@ -7,17 +7,17 @@ import {
   useLoaderData,
   useMatches,
 } from "react-router-dom";
-import Home, { loader as homeLoader } from "./routes/_index";
-import Client, { loader as clientLoader, action as clientAction } from "./routes/clientId";
-import Me, { loader as meLoader, action as meAction } from "./routes/me";
-import Settings, { loader as settingsLoader, action as settingsAction } from "./routes/settings";
-import Invoice, { loader as invoiceLoader, action as invoiceAction } from "./routes/invoiceId";
+import Home, { electronLoader as homeLoader } from "./routes/_index";
+import Client, { electronLoader as clientLoader, electronAction as clientAction } from "./routes/clientId";
+import Me, { electronLoader as meLoader, electronAction as meAction } from "./routes/me";
+import Settings, { electronLoader as settingsLoader, electronAction as settingsAction } from "./routes/settings";
+import Invoice, { electronLoader as invoiceLoader, electronAction as invoiceAction } from "./routes/invoiceId";
 import "./styles/tailwind.css";
 import "./styles/global.css";
 import "./styles/reset.css";
 import { getSettings } from "./utils/settings";
 import type { Settings as SettingsType } from "./utils/settings";
-import Clients, { loader as clientsLoader } from "./routes/clients";
+import Clients, { electronLoader as clientsLoader } from "./routes/clients";
 import { getFolderPath } from "./utils/fileManagement";
 import Legal from "./routes/legal";
 

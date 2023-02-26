@@ -1,9 +1,23 @@
 import { Link, useLoaderData } from "react-router-dom";
-import { InvoiceRow } from "renderer/components/Invoice/InvoiceRow";
-import useSetDocumentTitle from "renderer/services/useSetDocumentTitle";
-import { readFile } from "renderer/utils/fileManagement";
+import { InvoiceRow } from "../components/Invoice/InvoiceRow";
+import useSetDocumentTitle from "../services/useSetDocumentTitle";
+import { readFile } from "../utils/fileManagement";
 
-export const loader = async () => {
+export const webLoader = async () => {
+  const me = JSON.parse(window.localStorage.getItem("me.json") || "{}");
+  const invoices = JSON.parse(window.localStorage.getItem("invoices.json") || "[]");
+  const clients = JSON.parse(window.localStorage.getItem("clients.json") || "[]");
+  window.countryCode = me?.country_code;
+  return {
+    me,
+    invoices: invoices.map((invoice) => ({
+      ...invoice,
+      client: clients.find((client) => client.organisation_number === invoice.client),
+    })),
+  };
+};
+
+export const electronLoader = async () => {
   const me = await readFile("me.json", { default: {} });
   const invoices = await readFile("invoices.json", { default: [] });
   const clients = await readFile("clients.json", { default: [] });

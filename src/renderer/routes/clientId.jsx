@@ -1,12 +1,45 @@
 import { useMemo, useState } from "react";
 import { Form, redirect, useLoaderData } from "react-router-dom";
-import useSetDocumentTitle from "renderer/services/useSetDocumentTitle";
-import { countries } from "renderer/utils/countries";
-import { readFile, writeFile } from "renderer/utils/fileManagement";
 import Select from "react-select";
-import { genericEmailTemplate, genericEmailTemplateSubject } from "renderer/utils/contact";
+import useSetDocumentTitle from "../services/useSetDocumentTitle";
+import { countries } from "../utils/countries";
+import { readFile, writeFile } from "../utils/fileManagement";
+import { genericEmailTemplate, genericEmailTemplateSubject } from "../utils/contact";
 
-export const loader = async ({ params }) => {
+export const webLoader = async ({ params }) => {
+  const settings = JSON.parse(window.localStorage.getItem("settings.json") || "{}");
+  const clients = JSON.parse(window.localStorage.getItem("clients.json") || "[]");
+  const client =
+    params.clientId !== "new" ? clients.find((_client) => _client.organisation_number === params.clientId) : null;
+  return { client, settings };
+};
+
+export const webAction = async ({ request, params }) => {
+  const clients = JSON.parse(window.localStorage.getItem("clients.json") || "[]");
+  const oldClient = clients.find((_client) => _client.organisation_number === params.clientId);
+  const updatedClient = Object.fromEntries(await request.formData());
+  if (!updatedClient.country_code) {
+    updatedClient.country_code = oldClient?.country_code;
+  }
+  if (updatedClient.code) {
+    // remove all spaces
+    updatedClient.code = updatedClient.code.replace(/\s/g, "").toUpperCase();
+  }
+  window.localStorage.setItem(
+    "clients.json",
+    params.clientId === "new"
+      ? JSON.stringify([...clients, updatedClient])
+      : JSON.stringify(
+          clients.map((_client) => (_client.organisation_number === params.clientId ? updatedClient : _client)),
+        ),
+  );
+  if (params.clientId !== updatedClient.organisation_number) {
+    return redirect(`/client/${updatedClient.organisation_number}`);
+  }
+  return { ok: true };
+};
+
+export const electronLoader = async ({ params }) => {
   const settings = await readFile("settings.json");
   const clients = await readFile("clients.json", { default: [] });
   const client =
@@ -14,7 +47,7 @@ export const loader = async ({ params }) => {
   return { client, settings };
 };
 
-export const action = async ({ request, params }) => {
+export const electronAction = async ({ request, params }) => {
   const clients = await readFile("clients.json", { default: [] });
   const oldClient = clients.find((_client) => _client.organisation_number === params.clientId);
   const updatedClient = Object.fromEntries(await request.formData());

@@ -1,11 +1,12 @@
+/* eslint-disable no-alert */
 import { Link, redirect, useFetcher, useLoaderData, useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
 import html2pdf from "html2pdf.js";
 import React, { useMemo, useRef, useState } from "react";
 import CreatableSelect from "react-select/creatable";
-import { getFolderPath, readFile, writeFile } from "renderer/utils/fileManagement";
-import useSetDocumentTitle from "renderer/services/useSetDocumentTitle";
-import OpenInNewWindowIcon from "renderer/components/OpenInNewWindowIcon";
+import { getFolderPath, readFile, writeFile } from "../utils/fileManagement";
+import useSetDocumentTitle from "../services/useSetDocumentTitle";
+import OpenInNewWindowIcon from "../components/OpenInNewWindowIcon";
 import {
   formatToCurrency,
   getCurrencySymbol,
@@ -13,20 +14,73 @@ import {
   getFormattedTotalPrice,
   getFormattedTotalVAT,
   getItemPriceWithVat,
-} from "renderer/utils/prices";
-import { getSettings } from "renderer/utils/settings";
+} from "../utils/prices";
+import { getSettings } from "../utils/settings";
 import {
   defaultInvoiceNumberFormat,
   getInvoiceName,
   getInvoiceNumber,
   getNextInvoiceNumber,
   sortInvoices,
-} from "renderer/utils/invoice";
-import { computeEmailBody, computeEmailSubject } from "renderer/utils/contact";
-import { ButtonsSatus } from "renderer/components/Invoice/ButtonsSatus";
-import { countries } from "renderer/utils/countries";
+} from "../utils/invoice";
+import { computeEmailBody, computeEmailSubject } from "../utils/contact";
+import { ButtonsSatus } from "../components/Invoice/ButtonsSatus";
+import { countries } from "../utils/countries";
 
-export const loader = async ({ params }) => {
+export const webLoader = async ({ params }) => {
+  const settings = await JSON.parse(window.localStorage.getItem("settings.json") || "{}");
+  const me = JSON.parse(window.localStorage.getItem("me.json") || "{}");
+  window.countryCode = me?.country_code;
+  const clients = JSON.parse(window.localStorage.getItem("clients.json") || "[]");
+  const invoices = JSON.parse(window.localStorage.getItem("invoices.json") || "[]");
+  const invoice =
+    params.invoice_number !== "new"
+      ? invoices.find((_invoice) => _invoice.invoice_number === params.invoice_number)
+      : null;
+  return { settings, invoice, invoices, clients, me, forWeb: true };
+};
+
+export const webAction = async ({ request, params }) => {
+  const invoices = JSON.parse(window.localStorage.getItem("invoices.json") || "[]");
+  const form = await request.formData();
+  const updatedInvoice = structuredClone(
+    invoices.find((_invoice) => _invoice.invoice_number === params.invoice_number) ?? {},
+  );
+  if (form.get("invoice_number")) updatedInvoice.invoice_number = form.get("invoice_number");
+  if (form.get("client")) {
+    updatedInvoice.client = form.get("client");
+  }
+  if (form.get("title")) updatedInvoice.title = form.get("title");
+  if (form.get("status")) updatedInvoice.status = form.get("status");
+  if (form.get("items")) updatedInvoice.items = JSON.parse(form.get("items"));
+  if (form.get("emission_date")) updatedInvoice.emission_date = form.get("emission_date");
+  if (form.get("due_date")) updatedInvoice.due_date = form.get("due_date");
+  if (form.get("paid_date")) updatedInvoice.paid_date = form.get("paid_date");
+  if (form.get("notes")) updatedInvoice.notes = form.get("notes");
+
+  if (params.invoice_number !== updatedInvoice.invoice_number) {
+    if (invoices.find((_invoice) => _invoice.invoice_number === updatedInvoice.invoice_number)) {
+      return { ok: false, error: "Invoice number already exists" };
+    }
+  }
+
+  window.localStorage.setItem(
+    "invoices.json",
+    JSON.stringify(
+      params.invoice_number === "new"
+        ? [...invoices, updatedInvoice].sort(sortInvoices)
+        : invoices
+            .map((_invoice) => (_invoice.invoice_number === params.invoice_number ? updatedInvoice : _invoice))
+            .sort(sortInvoices),
+    ),
+  );
+  if (params.invoice_number !== updatedInvoice.invoice_number) {
+    return redirect(`/invoice/${updatedInvoice.invoice_number}`);
+  }
+  return { ok: true };
+};
+
+export const electronLoader = async ({ params }) => {
   const settings = await getSettings();
   const folderPath = await getFolderPath();
   const me = await readFile("me.json", { default: {} });
@@ -41,7 +95,7 @@ export const loader = async ({ params }) => {
   return { settings, invoice, invoices, clients, me, folderPath };
 };
 
-export const action = async ({ request, params }) => {
+export const electronAction = async ({ request, params }) => {
   const invoices = await readFile("invoices.json", { default: [] });
   const form = await request.formData();
   const updatedInvoice = structuredClone(
@@ -74,14 +128,13 @@ export const action = async ({ request, params }) => {
           .sort(sortInvoices),
   );
   if (params.invoice_number !== updatedInvoice.invoice_number) {
-    console.log("redirecting");
     return redirect(`/invoice/${updatedInvoice.invoice_number}`);
   }
   return { ok: true };
 };
 
 function Invoice() {
-  const { invoices, invoice, clients, me, settings, folderPath } = useLoaderData();
+  const { invoices, invoice, clients, me, settings, folderPath, forWeb } = useLoaderData();
 
   const defaultItem = {
     title: "",
@@ -246,7 +299,12 @@ This should ensure that the PDF file is saved with the desired filename and prev
             className="rounded border py-2 px-12 bg-white"
             type="button"
             title="It will export the invoice as PDF in the location of your choice."
-            onClick={() => generatePdf()}
+            onClick={() => {
+              if (forWeb) {
+                return window.alert("This feature is not available in the web version. Please download the app.");
+              }
+              generatePdf();
+            }}
           >
             Export as PDF
           </button>
@@ -254,6 +312,9 @@ This should ensure that the PDF file is saved with the desired filename and prev
             className="rounded border py-2 px-12 bg-black text-white"
             type="button"
             onClick={async () => {
+              if (forWeb) {
+                return window.alert("This feature is not available in the web version. Please download the app.");
+              }
               const pdfData = await generatePdf(folderPath);
 
               const invoiceFileName = getInvoiceName({ invoice, me, settings, client });

@@ -9,7 +9,9 @@ const useSetDocumentTitle = (title, { isVisible = true } = {}) => {
     } else {
       document.title = previousTitle.current;
     }
-    return () => (document.title = previousTitle.current);
+    return () => {
+      document.title = previousTitle.current;
+    };
   }, [isVisible, title]);
 
   return null;

@@ -1,15 +1,37 @@
 import { useRef, useState } from "react";
 import { Form, useLoaderData } from "react-router-dom";
-import { readFile, writeFile } from "renderer/utils/fileManagement";
-import { countries } from "renderer/utils/countries";
 import Select from "react-select";
+import { readFile, writeFile } from "../utils/fileManagement";
+import { countries } from "../utils/countries";
 
-export const loader = async () => {
+export const webLoader = async () => {
+  const me = JSON.parse(window.localStorage.getItem("me.json") || "{}");
+  return { me };
+};
+
+export const webAction = async ({ request }) => {
+  const me = JSON.parse(window.localStorage.getItem("me.json") || "{}");
+  window.countryCode = me?.country_code;
+  const updatedMe = Object.fromEntries(await request.formData());
+  if (!updatedMe.country_code) {
+    updatedMe.country_code = me?.country_code;
+  }
+  if (updatedMe?.country_code?.length && !countries.find((c) => c.code === updatedMe.country_code)) {
+    // eslint-disable-next-line no-alert
+    return window.alert(
+      "This country code doesn't exist. Please check https://en.wikipedia.org/wiki ISO_3166-1_alpha-2#Officially_assigned_code_elements to find yours.",
+    );
+  }
+  window.localStorage.setItem("me.json", JSON.stringify({ ...me, ...updatedMe }));
+  return { ok: true };
+};
+
+export const electronLoader = async () => {
   const me = await readFile("me.json", { default: {} });
   return { me };
 };
 
-export const action = async ({ request }) => {
+export const electronAction = async ({ request }) => {
   const me = await readFile("me.json");
   window.countryCode = me?.country_code;
   const updatedMe = Object.fromEntries(await request.formData());
