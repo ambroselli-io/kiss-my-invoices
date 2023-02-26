@@ -1,7 +1,7 @@
 {
   "name": "kiss-my-invoices",
   "description": "A simple invoice manager for freelancers and independants 💋",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "keywords": [
     "invoice",
     "indihacker"
