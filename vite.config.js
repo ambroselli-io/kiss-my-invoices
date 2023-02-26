@@ -6,7 +6,7 @@ export default defineConfig(({ command, mode, ssrBuild }) => {
   if (command === "serve") {
     return {
       plugins: [react()],
-      root: "src/renderer",
+      root: mode === "development" ? "src/renderer" : "",
     };
   }
   // command === 'build'
