@@ -1,4 +1,5 @@
-import { app, Menu, shell, BrowserWindow, MenuItemConstructorOptions } from "electron";
+import { Menu, shell, BrowserWindow, MenuItemConstructorOptions } from "electron";
+import { autoUpdater } from "electron-updater";
 
 interface DarwinMenuItemConstructorOptions extends MenuItemConstructorOptions {
   selector?: string;
@@ -52,7 +53,7 @@ export default class MenuBuilder {
         { label: "Services", submenu: [] },
         { type: "separator" },
         {
-          label: "Hide ElectronReact",
+          label: "Hide Kiss my Invoices",
           accelerator: "Command+H",
           selector: "hide:",
         },
@@ -67,7 +68,7 @@ export default class MenuBuilder {
           label: "Quit",
           accelerator: "Command+Q",
           click: () => {
-            app.quit();
+            autoUpdater.quitAndInstall();
           },
         },
       ],
@@ -99,6 +100,13 @@ export default class MenuBuilder {
           },
         },
         {
+          label: "Forward",
+          accelerator: "Command+]",
+          click: () => {
+            this.mainWindow.webContents.goForward();
+          },
+        },
+        {
           label: "Reload",
           accelerator: "Command+R",
           click: () => {
@@ -125,6 +133,27 @@ export default class MenuBuilder {
       label: "View",
       submenu: [
         {
+          label: "Back",
+          accelerator: "Command+[",
+          click: () => {
+            this.mainWindow.webContents.goBack();
+          },
+        },
+        {
+          label: "Forward",
+          accelerator: "Command+]",
+          click: () => {
+            this.mainWindow.webContents.goForward();
+          },
+        },
+        {
+          label: "Reload",
+          accelerator: "Command+R",
+          click: () => {
+            this.mainWindow.webContents.reload();
+          },
+        },
+        {
           label: "Toggle Full Screen",
           accelerator: "Ctrl+Command+F",
           click: () => {
@@ -147,30 +176,24 @@ export default class MenuBuilder {
       ],
     };
     const subMenuHelp: MenuItemConstructorOptions = {
-      label: "Help",
+      label: "Contact",
       submenu: [
         {
-          label: "Learn More",
-          click() {
-            shell.openExternal("https://electronjs.org");
+          label: "Send me an email",
+          click: () => {
+            shell.openExternal("mailto:arnaud@ambroselli.io&subject=Kiss my Invoices feedback");
           },
         },
         {
-          label: "Documentation",
-          click() {
-            shell.openExternal("https://github.com/electron/electron/tree/main/docs#readme");
+          label: "Ask me anything on Twitter",
+          click: () => {
+            shell.openExternal("https://twitter.com/ambroselli_io");
           },
         },
         {
-          label: "Community Discussions",
-          click() {
-            shell.openExternal("https://www.electronjs.org/community");
-          },
-        },
-        {
-          label: "Search Issues",
-          click() {
-            shell.openExternal("https://github.com/electron/electron/issues");
+          label: "Open a new issue on GitHub",
+          click: () => {
+            shell.openExternal("https://github.com/ambroselli-io/kiss-my-invoices/issues/new/choose");
           },
         },
       ],
@@ -238,30 +261,24 @@ export default class MenuBuilder {
               ],
       },
       {
-        label: "Help",
+        label: "&Contact",
         submenu: [
           {
-            label: "Learn More",
-            click() {
-              shell.openExternal("https://electronjs.org");
+            label: "Send me an email",
+            click: () => {
+              shell.openExternal("mailto:arnaud@ambroselli.io&subject=Kiss my Invoices feedback");
             },
           },
           {
-            label: "Documentation",
-            click() {
-              shell.openExternal("https://github.com/electron/electron/tree/main/docs#readme");
+            label: "Ask me anything on Twitter",
+            click: () => {
+              shell.openExternal("https://twitter.com/ambroselli_io");
             },
           },
           {
-            label: "Community Discussions",
-            click() {
-              shell.openExternal("https://www.electronjs.org/community");
-            },
-          },
-          {
-            label: "Search Issues",
-            click() {
-              shell.openExternal("https://github.com/electron/electron/issues");
+            label: "Open a new issue on GitHub",
+            click: () => {
+              shell.openExternal("https://github.com/ambroselli-io/kiss-my-invoices/issues/new/choose");
             },
           },
         ],

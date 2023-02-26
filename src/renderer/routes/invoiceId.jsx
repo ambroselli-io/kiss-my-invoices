@@ -358,43 +358,40 @@ This should ensure that the PDF file is saved with the desired filename and prev
             </p>
           </invoiceFetcher.Form>
           <div className="mb-10 flex justify-between">
-            {[
-              "organisation_name",
-              "address",
-              "city",
-              "country_code",
-              "organisation_number_type",
-              "organisation_number",
-            ].filter((_field) => !me[_field]).length ? (
-              <Link
-                to="/me"
-                className="flex items-center justify-center rounded border-2 border-yellow-400 bg-yellow-100 p-2 text-center text-gray-400"
-              >
-                <p>
-                  <u>Click here</u>
+            <p>
+              {me?.organisation_name && (
+                <>
+                  {me?.organisation_name}
                   <br />
-                  to finish setup your profile
-                </p>
-              </Link>
-            ) : (
-              <p>
-                <b>{me?.organisation_name}</b>
-                <br />
-                {me?.address}
-                <br />
-                {me?.zip} {me?.city}
-                <br />
-                {countries.find((c) => c.code === me?.country_code)?.country}
-                <br />
-                {me?.organisation_number_type}: {me?.organisation_number}
-                {!!me?.vat_number?.length && (
-                  <>
-                    <br />
-                    VAT: {me?.vat_number}
-                  </>
-                )}
-              </p>
-            )}
+                </>
+              )}
+              {me?.address && (
+                <>
+                  {me?.address}
+                  <br />
+                </>
+              )}
+              {(me?.zip || me?.city) && (
+                <>
+                  {me?.zip ? `${me?.zip} ` : ""}
+                  {me?.city}
+                  <br />
+                </>
+              )}
+              {me?.country_code && (
+                <>
+                  {countries.find((c) => c.code === me.country_code)?.country}
+                  <br />
+                </>
+              )}
+              {me?.organisation_number_type && me?.organisation_number && (
+                <>
+                  {me?.organisation_number_type}: {me?.organisation_number}
+                  <br />
+                </>
+              )}
+              {!!me?.vat_number?.length && <>VAT: {me?.vat_number}</>}
+            </p>
             <div className="text-right">
               {!isPrinting && (
                 <CreatableSelect
@@ -415,47 +412,40 @@ This should ensure that the PDF file is saved with the desired filename and prev
                   formatOptionLabel={ClientOption}
                 />
               )}
-              {[
-                "organisation_name",
-                "address",
-                "city",
-                "country_code",
-                "organisation_number_type",
-                "organisation_number",
-              ].filter((_field) => !client[_field]).length ? (
-                <Link
-                  to={`/client/${client?.organisation_number}`}
-                  className="flex items-center justify-center rounded border-2 border-yellow-400 bg-yellow-100 p-2 text-center text-gray-400"
-                >
-                  <p>
-                    <u>Click here</u>
+              <p className="text-right">
+                {isPrinting && (
+                  <div className={isPrinting ? "" : "hidden"}>
+                    <b>{client?.organisation_name}</b>
                     <br />
-                    to complete this client&#39;s informations
-                  </p>
-                </Link>
-              ) : (
-                <p className="text-right">
-                  {isPrinting && (
-                    <div className={isPrinting ? "" : "hidden"}>
-                      <b>{client?.organisation_name}</b>
-                      <br />
-                    </div>
-                  )}
-                  {client?.address}
-                  <br />
-                  {client?.zip} {client?.city}
-                  <br />
-                  {countries.find((c) => c.code === client.country_code)?.country}
-                  <br />
-                  {client?.organisation_number_type}: {client?.organisation_number}
-                  {!!client?.vat_number?.length && (
-                    <>
-                      <br />
-                      VAT: {client?.vat_number}
-                    </>
-                  )}
-                </p>
-              )}
+                  </div>
+                )}
+                {client?.address && (
+                  <>
+                    {client?.address}
+                    <br />
+                  </>
+                )}
+                {(client?.zip || client?.city) && (
+                  <>
+                    {client?.zip ? `${client?.zip} ` : ""}
+                    {client?.city}
+                    <br />
+                  </>
+                )}
+                {client?.country_code && (
+                  <>
+                    {countries.find((c) => c.code === client.country_code)?.country}
+                    <br />
+                  </>
+                )}
+                {client?.organisation_number_type && client?.organisation_number && (
+                  <>
+                    {client?.organisation_number_type}: {client?.organisation_number}
+                    <br />
+                  </>
+                )}
+                {!!client?.vat_number?.length && <>VAT: {client?.vat_number}</>}
+              </p>
             </div>
           </div>
           <input
@@ -529,15 +519,15 @@ This should ensure that the PDF file is saved with the desired filename and prev
             <p className="text-right pr-3">{getFormattedTotalPrice(items)}</p>
           </div>
           <div className="mt-auto flex justify-start gap-4">
-            {!settings?.payment_details ? (
+            {!isPrinting && !settings?.payment_details ? (
               <Link
                 to="/settings"
                 className="w-full flex items-center justify-start rounded border-2 border-yellow-400 bg-yellow-100 p-2 text-center text-gray-400"
               >
                 <p className="text-left">
-                  <u>Click here</u>
+                  <u>Click here</u> to setup your payment details
                   <br />
-                  to setup your payment details
+                  <small>This yellow frame won&#39;t be printed</small>
                 </p>
               </Link>
             ) : (
@@ -556,15 +546,15 @@ This should ensure that the PDF file is saved with the desired filename and prev
               </>
             )}
           </div>
-          {!settings?.payment_terms ? (
+          {!isPrinting && !settings?.payment_terms ? (
             <Link
               to="/settings"
               className="mt-10 w-full flex items-center justify-start rounded border-2 border-yellow-400 bg-yellow-100 p-2 text-center text-gray-400"
             >
               <p className="text-left">
-                <u>Click here</u>
+                <u>Click here</u> to setup your payment terms
                 <br />
-                to setup your payment terms
+                <small>This yellow frame won&#39;t be printed</small>
               </p>
             </Link>
           ) : (

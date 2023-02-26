@@ -13,6 +13,9 @@ export const action = async ({ request }) => {
   const me = await readFile("me.json");
   window.countryCode = me?.country_code;
   const updatedMe = Object.fromEntries(await request.formData());
+  if (!updatedMe.country_code) {
+    updatedMe.country_code = me?.country_code;
+  }
   if (updatedMe?.country_code?.length && !countries.find((c) => c.code === updatedMe.country_code)) {
     return window.electron.ipcRenderer.invoke(
       "dialog:showMessageBoxSync",
@@ -26,7 +29,6 @@ export const action = async ({ request }) => {
 
 function Me() {
   const { me } = useLoaderData();
-  console.log("me", me);
   const [saveDisabled, setSaveDisabled] = useState(true);
 
   const defaultValues = useRef(
@@ -209,17 +211,6 @@ function Me() {
               defaultValue={defaultValues.current.email}
             />
             <label htmlFor="email">Email</label>
-          </div>
-          <div className="mb-3 flex max-w-lg flex-col-reverse gap-2">
-            <input
-              name="email_cc"
-              type="email"
-              id="email_cc"
-              className="outline-main block w-full rounded border border-black bg-transparent p-2.5 text-black transition-all"
-              placeholder="ilike@froadmaps.com"
-              defaultValue={defaultValues.current.email_cc}
-            />
-            <label htmlFor="email_cc">Email CC</label>
           </div>
           <div className="mb-3 flex max-w-lg flex-col-reverse gap-2">
             <input

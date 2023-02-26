@@ -19,6 +19,7 @@ import { getSettings } from "./utils/settings";
 import type { Settings as SettingsType } from "./utils/settings";
 import Clients, { loader as clientsLoader } from "./routes/clients";
 import { getFolderPath } from "./utils/fileManagement";
+import Legal from "./routes/legal";
 
 const loader = async ({
   request,
@@ -68,6 +69,9 @@ function Root() {
               <span className="mr-2">💋</span>Invoice {invoice_number}
             </NavLink>
           )}
+          <NavLink to="legal" className="ml-auto px-5 py-2  [&.active_.kiss]:!visible">
+            <span className="kiss invisible mr-2">💋</span>About-us
+          </NavLink>
           {/* {!!clientNumber && (
           <NavLink to={`/client/${clientNumber}`} className="px-5 py-2">
             <span className="mr-2">💋</span>Client {clientNumber}
@@ -133,6 +137,10 @@ const router = createHashRouter(
           loader: homeLoader,
           index: true,
           errorElement: <ErrorBoundary />,
+        },
+        {
+          path: "legal",
+          element: <Legal />,
         },
         {
           path: "me",
