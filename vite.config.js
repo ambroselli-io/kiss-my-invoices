@@ -13,7 +13,7 @@ export default defineConfig(({ command, mode, ssrBuild }) => {
   return {
     plugins: [react()],
     root: "src/renderer",
-    base: "https://ambroselli-io.github.io/kiss-my-invoices/",
+    base: "/",
     build: {
       outDir: "../../dist",
     },

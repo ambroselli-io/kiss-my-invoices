@@ -108,6 +108,9 @@ const router = createBrowserRouter(
     },
   ],
   {
+    basename: process.env.NODE_ENV === 'production' ? '/kiss-my-invoices/' : "/",
+  }
+  {
     // initialEntries: ["/", "/invoice/new", "/invoice/2023-02-004"],
     // initialEntries: ["/", "/me"],
     // initialEntries: ["/", "/client/481 071 769 00071"],
