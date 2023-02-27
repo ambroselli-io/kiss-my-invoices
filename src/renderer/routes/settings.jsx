@@ -1,5 +1,5 @@
 import dayjs from "dayjs";
-import { useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import { Form, redirect, useLoaderData } from "react-router-dom";
 import { genericEmailTemplate, genericEmailTemplateSubject } from "../utils/contact";
 import { getFolderPath } from "../utils/fileManagement";
@@ -63,6 +63,8 @@ function Settings() {
     return true;
   });
 
+  const [initFolderPath, setInitFolderPath] = useState(null);
+
   if (!folderPath && !forWeb) {
     return (
       <Form
@@ -80,32 +82,52 @@ function Settings() {
           <h1 className="text-3xl font-bold">Welcome to Kiss my invoices! 💋</h1>
         </div>
         <div className="flex-1 flex flex-col items-center justify-center">
-          <h2 className="text-lg font-semibold max-w-screen-lg text-center">
-            <label htmlFor="kiss_my_invoices_folder_path">
-              Before you start creating clients and invoices,
-              <br />
-              please tell us a path where we can save them on your computer:
-            </label>
-          </h2>
-          <div className="flex min-w-md basis-1/2 flex-col gap-4 p-4">
-            <div className="mb-3 flex max-w-screen-lg flex-col-reverse items-center gap-2">
-              <input
-                name="kiss_my_invoices_folder_path"
-                type="text"
-                id="kiss_my_invoices_folder_path"
-                className="outline-main block w-full rounded border border-black bg-transparent p-2.5 text-black transition-all"
-                placeholder="/Users/arnaudambroselli/Pro/__admin/ZZP/My invoices"
-                defaultValue={folderPath}
-              />
-            </div>
-            <button
-              disabled={saveDisabled}
-              className="rounded bg-gray-800 py-2 px-12 text-gray-50 disabled:opacity-30"
-              type="submit"
-            >
-              Save
-            </button>
-          </div>
+          {!initFolderPath ? (
+            <>
+              <h2 className="text-lg font-semibold max-w-screen-lg text-center">
+                <label htmlFor="kiss_my_invoices_folder_path">
+                  Before you start creating clients and invoices,
+                  <br />
+                  please tell us in which folder we can save them on your computer:
+                </label>
+              </h2>
+              <div className="flex basis-1/2 flex-col gap-4 p-4">
+                <button
+                  className="rounded bg-gray-800 py-2 px-12 text-gray-50 disabled:opacity-30"
+                  type="button"
+                  onClick={async () => {
+                    const folder = await window.electron.ipcRenderer.invoke("dialog:openDirectory");
+                    setInitFolderPath(folder);
+                  }}
+                >
+                  Choose my folder...
+                </button>
+              </div>
+            </>
+          ) : (
+            <React.Fragment key={initFolderPath}>
+              <input type="hidden" value={initFolderPath} name="kiss_my_invoices_folder_path" />
+              <h2 className="text-lg max-w-screen-lg text-center">
+                <span className="font-semibold">We&#39;ll save your invoices in:</span>
+                <br />
+                <code className="text-blue-500 font-semibold bg-gray-50 my-2 block">{initFolderPath}</code>
+              </h2>
+              <div className="flex basis-1/2 flex-col p-4">
+                <button className="rounded bg-gray-800 py-2 px-12 text-gray-50" type="submit">
+                  Yes, now let&#39;s Kiss my invoices! 💋
+                </button>
+                <button
+                  className="text-gray-800 underline py-2 px-12"
+                  type="button"
+                  onClick={() => {
+                    setInitFolderPath(null);
+                  }}
+                >
+                  Change
+                </button>
+              </div>
+            </React.Fragment>
+          )}
         </div>
       </Form>
     );

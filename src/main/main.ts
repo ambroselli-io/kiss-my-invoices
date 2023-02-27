@@ -203,3 +203,14 @@ app
 ipcMain.handle("dialog:showMessageBoxSync", async (_event, message) => {
   return dialog.showMessageBoxSync(BrowserWindow?.getFocusedWindow(), { message });
 });
+
+// open a directory
+ipcMain.handle("dialog:openDirectory", async () => {
+  const { canceled, filePaths } = await dialog.showOpenDialog(mainWindow, {
+    properties: ["openDirectory"],
+  });
+  if (canceled) {
+    return null;
+  }
+  return filePaths[0];
+});

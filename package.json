@@ -1,7 +1,7 @@
 {
   "name": "kiss-my-invoices",
   "description": "A simple invoice manager for freelancers and independants 💋",
-  "version": "0.0.12",
+  "version": "0.0.13",
   "license": "GNU Affero General Public License v3.0",
   "keywords": [
     "invoice",
