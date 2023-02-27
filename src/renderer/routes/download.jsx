@@ -1,3 +1,5 @@
+import packageJson from "../../../package.json";
+
 function Download() {
   return (
     <div className="flex h-full w-full flex-col bg-rose-500">
@@ -15,14 +17,25 @@ function Download() {
             repo. You own your data! Well, github does... but hey! 🤩
           </li>
         </ul>
-        <a
-          className="rounded bg-gray-800 py-2 px-12 text-gray-50 mx-auto"
-          href="https://github.com/ambroselli-io/kiss-my-invoices/releases/latest"
-          target="_blank"
-          rel="noreferrer"
-        >
-          Download
-        </a>
+        <div className="flex flex-col gap-4 items-center justify-center w-full">
+          <a
+            className="rounded bg-gray-800 py-2 px-12 text-gray-50"
+            href={`https://github.com/ambroselli-io/kiss-my-invoices/releases/download/v${packageJson.version}/Kiss-My-Invoice-${packageJson.version}-arm64.dmg`}
+            target="_blank"
+            rel="noreferrer"
+          >
+            Download Mac M1/M2 (arm64)
+          </a>
+          <a
+            className="rounded text-gray-800 border-gray-800 border-2 py-2 px-12 bg-gray-50"
+            href={`https://github.com/ambroselli-io/kiss-my-invoices/releases/download/v${packageJson.version}/Kiss-My-Invoice-${packageJson.version}.dmg`}
+            target="_blank"
+            rel="noreferrer" // github.com/ambroselli-io/kiss-my-invoices/releases/download/v0.0.10/Kiss-My-Invoice-0.0.10.dmg
+          >
+            Download Mac Intel (x86)
+          </a>
+        </div>
+        <p className="text-xs opacity-50 italic mx-auto">Soon available for Windows and Linux, stay tuned!</p>
       </div>
     </div>
   );
