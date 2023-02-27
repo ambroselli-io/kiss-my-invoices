@@ -19,7 +19,7 @@ function Root() {
     <div className="h-full w-full">
       {!!forWeb && (
         <p className="bg-rose-500 text-white font-bold text-xs py-3 m-0 text-center">
-          This is for demo purpose only. Please{" "}
+          This is for demo purpose only, your data won&#39;t be saved. Please{" "}
           <Link to="download" className="underline">
             download
           </Link>{" "}
