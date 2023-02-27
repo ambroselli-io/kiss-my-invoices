@@ -23,7 +23,6 @@ export function ButtonsSatus({ invoice, invoiceNumber, className = "", alwaysSho
       action={`/invoice/${invoiceNumber}`}
       onSubmit={(e) => {
         if (alwaysShowAll) return;
-        console.log(invoice.status === e.nativeEvent.submitter.value);
         setShowAll(invoice.status === e.nativeEvent.submitter.value);
       }}
     >

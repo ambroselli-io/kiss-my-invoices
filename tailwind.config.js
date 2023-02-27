@@ -28,7 +28,7 @@ module.exports = {
         "screen-4/5": "80vh",
         "screen-1/2": "50vh",
         18: "4.5rem",
-        a4: "287mm",
+        a4: "295mm",
       },
       width: {
         a4: "210mm",

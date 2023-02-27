@@ -27,6 +27,14 @@ import { computeEmailBody, computeEmailSubject } from "../utils/contact";
 import { ButtonsSatus } from "../components/Invoice/ButtonsSatus";
 import { countries } from "../utils/countries";
 
+const defaultItem = {
+  title: "",
+  quantity: 1,
+  unit_price: 600,
+  unit: "day",
+  vat: 0,
+};
+
 export const webLoader = async ({ params }) => {
   const settings = await JSON.parse(window.localStorage.getItem("settings.json") || "{}");
   const me = JSON.parse(window.localStorage.getItem("me.json") || "{}");
@@ -46,13 +54,21 @@ export const webAction = async ({ request, params }) => {
   const updatedInvoice = structuredClone(
     invoices.find((_invoice) => _invoice.invoice_number === params.invoice_number) ?? {},
   );
+  if (form.get("action") === "duplicate") {
+    return { ok: false };
+  }
   if (form.get("invoice_number")) updatedInvoice.invoice_number = form.get("invoice_number");
   if (form.get("client")) {
     updatedInvoice.client = form.get("client");
   }
   if (form.get("title")) updatedInvoice.title = form.get("title");
   if (form.get("status")) updatedInvoice.status = form.get("status");
-  if (form.get("items")) updatedInvoice.items = JSON.parse(form.get("items"));
+  if (form.get("items")) {
+    updatedInvoice.items = JSON.parse(form.get("items")) || [];
+    if (updatedInvoice?.items?.length > 0) {
+      window.defaultItem = updatedInvoice.items[updatedInvoice.items.length - 1] ?? defaultItem;
+    }
+  }
   if (form.get("emission_date")) updatedInvoice.emission_date = form.get("emission_date");
   if (form.get("due_date")) updatedInvoice.due_date = form.get("due_date");
   if (form.get("paid_date")) updatedInvoice.paid_date = form.get("paid_date");
@@ -101,13 +117,35 @@ export const electronAction = async ({ request, params }) => {
   const updatedInvoice = structuredClone(
     invoices.find((_invoice) => _invoice.invoice_number === params.invoice_number) ?? {},
   );
+  if (form.get("action") === "duplicate") {
+    const settings = await getSettings();
+    const clients = await readFile("clients.json", { default: [] });
+    const client = clients.find((_client) => _client.organisation_number === updatedInvoice?.client);
+    updatedInvoice.invoice_number = getInvoiceNumber({
+      emissionDate: dayjs(),
+      settings,
+      client,
+      inc: getNextInvoiceNumber(invoices),
+    });
+    updatedInvoice.status = "DRAFT";
+    updatedInvoice.emission_date = dayjs().format("YYYY-MM-DD");
+    updatedInvoice.due_date = dayjs().add(1, "month").format("YYYY-MM-DD");
+
+    await writeFile("invoices.json", [...invoices, updatedInvoice].sort(sortInvoices));
+    return redirect(`/invoice/${updatedInvoice.invoice_number}`);
+  }
   if (form.get("invoice_number")) updatedInvoice.invoice_number = form.get("invoice_number");
   if (form.get("client")) {
     updatedInvoice.client = form.get("client");
   }
   if (form.get("title")) updatedInvoice.title = form.get("title");
   if (form.get("status")) updatedInvoice.status = form.get("status");
-  if (form.get("items")) updatedInvoice.items = JSON.parse(form.get("items"));
+  if (form.get("items")) {
+    updatedInvoice.items = JSON.parse(form.get("items")) || [];
+    if (updatedInvoice?.items?.length > 0) {
+      window.defaultItem = updatedInvoice.items[updatedInvoice.items.length - 1] ?? defaultItem;
+    }
+  }
   if (form.get("emission_date")) updatedInvoice.emission_date = form.get("emission_date");
   if (form.get("due_date")) updatedInvoice.due_date = form.get("due_date");
   if (form.get("paid_date")) updatedInvoice.paid_date = form.get("paid_date");
@@ -136,17 +174,12 @@ export const electronAction = async ({ request, params }) => {
 function Invoice() {
   const { invoices, invoice, clients, me, settings, folderPath, forWeb } = useLoaderData();
 
-  const defaultItem = {
-    title: "",
-    quantity: 1,
-    unit_price: 600,
-    vat: 0,
-  };
+  const myDefaultItem = typeof window === "undefined" ? defaultItem : window.defaultItem ?? defaultItem;
 
   const invoiceFetcher = useFetcher();
   const printableAreaRef = useRef(null);
 
-  const [items, setItems] = useState(invoice?.items?.length > 0 ? invoice?.items : [defaultItem]);
+  const [items, setItems] = useState(invoice?.items?.length > 0 ? invoice?.items : [myDefaultItem]);
 
   const client = clients.find((_client) => _client.organisation_number === invoice?.client);
   const originalClient = useRef(client);
@@ -293,9 +326,9 @@ This should ensure that the PDF file is saved with the desired filename and prev
               }
             }}
           >
-            🖨️ Print
+            🖨️ Print / Save as PDF
           </button>
-          <button
+          {/* <button
             className="rounded border py-2 px-12 bg-white"
             type="button"
             title="It will export the invoice as PDF in the location of your choice."
@@ -307,10 +340,11 @@ This should ensure that the PDF file is saved with the desired filename and prev
             }}
           >
             Export as PDF
-          </button>
+          </button> */}
           <button
-            className="rounded border py-2 px-12 bg-black text-white"
+            className="rounded border py-2 px-12 bg-black text-white disabled:opacity-50"
             type="button"
+            disabled={!invoice}
             onClick={async () => {
               if (forWeb) {
                 return window.alert("This feature is not available in the web version. Please download the app.");
@@ -352,11 +386,35 @@ This should ensure that the PDF file is saved with the desired filename and prev
           </button>
         </div>
       </div>
-      <ButtonsSatus className="print:hidden" invoice={invoice} invoiceNumber={invoiceNumber} alwaysShowAll />
-      <div className="h-a4 w-a4 m-auto mb-10 mt-2 max-w-3xl border-2 print:border-none border-gray-500 bg-white">
+      <div className="h-a4 w-a4 m-auto mb-10 mt-2 max-w-3xl relative">
+        <div className="relative w-full">
+          <ButtonsSatus className="print:hidden" invoice={invoice} invoiceNumber={invoiceNumber} alwaysShowAll />
+          <button
+            className={[
+              "absolute -right-36 top-0 rounded border px-6 my-1 bg-white print:hidden",
+              isPrinting ? "hidden" : "",
+            ].join(" ")}
+            type="submit"
+            disabled={!invoice}
+            onClick={(e) => {
+              if (forWeb) {
+                return window.alert("This feature is not available in the web version. Please download the app.");
+              }
+              const form = new FormData();
+              form.append("action", "duplicate");
+              form.append("from", "invoice number");
+              invoiceFetcher.submit(form, { method: "post" });
+            }}
+          >
+            ✌️ Duplicate
+          </button>
+        </div>
         <div
           ref={printableAreaRef}
-          className="h-a4 w-a4 max-w-3xl text-base text-gray-600 overflow-hidden flex flex-col p-8"
+          className={[
+            "h-a4 w-a4 text-base text-gray-600 overflow-hidden flex flex-col p-8 bg-white",
+            isPrinting ? "" : "max-w-3xl border-2 print:border-none border-gray-500",
+          ].join(" ")}
         >
           <invoiceFetcher.Form className="mb-10 flex justify-between" key={invoiceNumber}>
             <p className="mb-0 text-xl text-gray-900">Invoice</p>
@@ -372,7 +430,6 @@ This should ensure that the PDF file is saved with the desired filename and prev
                   size={invoiceNumber.length}
                   onBlur={(e) => {
                     const form = new FormData();
-                    console.log("CHANGE FUCKING INVOICE NUMBER");
                     form.append("invoice_number", e.currentTarget.value);
                     form.append("from", "invoice number");
                     invoiceFetcher.submit(form, { method: "post" });
@@ -475,10 +532,10 @@ This should ensure that the PDF file is saved with the desired filename and prev
               )}
               <p className="text-right">
                 {isPrinting && (
-                  <div className={isPrinting ? "" : "hidden"}>
-                    <b>{client?.organisation_name}</b>
-                    <br />
-                  </div>
+                  <>
+                    <b className={isPrinting ? "" : "hidden"}>{client?.organisation_name}</b>
+                    <br className={isPrinting ? "" : "hidden"} />
+                  </>
                 )}
                 {client?.address && (
                   <>
@@ -567,7 +624,7 @@ This should ensure that the PDF file is saved with the desired filename and prev
               className={["col-span-2 rounded border px-4 print:hidden", isPrinting ? "!hidden" : ""].join(" ")}
               type="button"
               onClick={() => {
-                setItems([...items, defaultItem]);
+                setItems([...items, myDefaultItem]);
               }}
             >
               Add an item
@@ -655,7 +712,8 @@ function Item({ item, index, items, setItems, invoiceNumber, invoiceFetcher, def
       onBlur={(e) => {
         const data = Object.fromEntries(new FormData(e.currentTarget).entries());
         const newItems = items
-          .map((_item, _index) => {
+          .map((_item, _index, _items) => {
+            if (index === _items.length - 1) return data;
             if (_index === index) {
               if (!data.title?.length) return null;
               return data;
