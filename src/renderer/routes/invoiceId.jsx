@@ -57,6 +57,13 @@ export const webAction = async ({ request, params }) => {
   if (form.get("action") === "duplicate") {
     return { ok: false };
   }
+  if (form.get("action") === "delete") {
+    window.localStorage.setItem(
+      "invoices.json",
+      JSON.stringify(invoices.filter((_invoice) => _invoice.invoice_number !== params.invoice_number)),
+    );
+    return redirect("/");
+  }
   if (form.get("invoice_number")) updatedInvoice.invoice_number = form.get("invoice_number");
   if (form.get("client")) {
     updatedInvoice.client = form.get("client");
@@ -133,6 +140,13 @@ export const electronAction = async ({ request, params }) => {
 
     await writeFile("invoices.json", [...invoices, updatedInvoice].sort(sortInvoices));
     return redirect(`/invoice/${updatedInvoice.invoice_number}`);
+  }
+  if (form.get("action") === "delete") {
+    await writeFile(
+      "invoices.json",
+      invoices.filter((_invoice) => _invoice.invoice_number !== params.invoice_number),
+    );
+    return redirect("/");
   }
   if (form.get("invoice_number")) updatedInvoice.invoice_number = form.get("invoice_number");
   if (form.get("client")) {
@@ -389,28 +403,47 @@ This should ensure that the PDF file is saved with the desired filename and prev
       <div className="h-a4 w-a4 m-auto mb-10 mt-2 max-w-3xl relative">
         <div className="relative w-full">
           <ButtonsSatus className="print:hidden" invoice={invoice} invoiceNumber={invoiceNumber} alwaysShowAll />
-          <button
-            className={[
-              "absolute -right-36 top-0 rounded border px-6 my-1 bg-white print:hidden",
-              isPrinting ? "hidden" : "",
-            ].join(" ")}
-            type="submit"
-            disabled={!invoice}
-            onClick={(e) => {
-              if (forWeb) {
-                return window.alert("This feature is not available in the web version. Please download the app.");
-              }
-              const form = new FormData();
-              form.append("action", "duplicate");
-              form.append("from", "invoice number");
-              invoiceFetcher.submit(form, { method: "post" });
-            }}
-          >
-            ✌️ Duplicate
-          </button>
+          <div className={["flex gap-1 absolute left-full top-0 print:hidden", isPrinting ? "hidden" : ""].join(" ")}>
+            <button
+              className="rounded border px-4 my-1 bg-white"
+              type="submit"
+              disabled={!invoice}
+              onClick={(e) => {
+                if (forWeb) {
+                  return window.alert("This feature is not available in the web version. Please download the app.");
+                }
+                const form = new FormData();
+                form.append("action", "duplicate");
+                form.append("from", "invoice number");
+                invoiceFetcher.submit(form, { method: "post" });
+              }}
+            >
+              ✌️&nbsp;Duplicate
+            </button>
+            {!!invoice && (
+              <button
+                className="rounded border border-red-500 text-red-500 disabled:opacity-50 px-4 my-1 bg-white"
+                type="submit"
+                title="You can't delete an invoice that has been sent."
+                disabled={invoice.status !== "DRAFT"}
+                onClick={(e) => {
+                  if (forWeb) {
+                    return window.alert("This feature is not available in the web version. Please download the app.");
+                  }
+                  const form = new FormData();
+                  form.append("action", "delete");
+                  form.append("from", "invoice number");
+                  invoiceFetcher.submit(form, { method: "post" });
+                }}
+              >
+                🗑️&nbsp;Delete
+              </button>
+            )}
+          </div>
         </div>
         <div
           ref={printableAreaRef}
+          contentEditable
           className={[
             "h-a4 w-a4 text-base text-gray-600 overflow-hidden flex flex-col p-8 bg-white",
             isPrinting ? "" : "max-w-3xl border-2 print:border-none border-gray-500",
