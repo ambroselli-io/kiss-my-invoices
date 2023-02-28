@@ -1,5 +1,4 @@
-import { Menu, shell, BrowserWindow, MenuItemConstructorOptions } from "electron";
-import { autoUpdater } from "electron-updater";
+import { app, Menu, shell, BrowserWindow, MenuItemConstructorOptions } from "electron";
 
 interface DarwinMenuItemConstructorOptions extends MenuItemConstructorOptions {
   selector?: string;
