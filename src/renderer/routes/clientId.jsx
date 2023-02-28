@@ -186,16 +186,6 @@ function Client() {
             />
             <label htmlFor="vat_number">VAT number</label>
           </div>
-          <div className="mb-3 flex max-w-lg items-center justify-start gap-2">
-            <input
-              name="is_vat_applicable"
-              type="checkbox"
-              id="is_vat_applicable"
-              className="outline-main block rounded border border-black bg-transparent p-2.5 text-black transition-all"
-              defaultChecked={defaultValues.is_vat_applicable}
-            />
-            <label htmlFor="is_vat_applicable">VAT applicable</label>
-          </div>
         </fieldset>
         <fieldset className="flex min-w-md grow basis-1/3 flex-col gap-4 p-4">
           <h2 className="text-lg font-semibold">Address details</h2>

@@ -443,7 +443,7 @@ This should ensure that the PDF file is saved with the desired filename and prev
         </div>
         <div
           ref={printableAreaRef}
-          contentEditable
+          contentEditable={process.env.NODE_ENV === "production"}
           className={[
             "h-a4 w-a4 text-base text-gray-600 overflow-hidden flex flex-col p-8 bg-white",
             isPrinting ? "" : "max-w-3xl border-2 print:border-none border-gray-500",

@@ -68,7 +68,7 @@ export default class MenuBuilder {
           label: "Quit",
           accelerator: "Command+Q",
           click: () => {
-            autoUpdater.quitAndInstall();
+            app.quit();
           },
         },
       ],
