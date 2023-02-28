@@ -41,7 +41,7 @@ function Root() {
             <span className="kiss invisible mr-2">💋</span>My clients
           </NavLink>
           {!!invoice_number && (
-            <NavLink to="invoice" className="px-5 py-2">
+            <NavLink to={`invoice/${invoice_number}`} className="px-5 py-2">
               <span className="mr-2">💋</span>Invoice {invoice_number}
             </NavLink>
           )}

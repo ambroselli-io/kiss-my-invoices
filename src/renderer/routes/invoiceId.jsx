@@ -751,11 +751,14 @@ function Item({ item, index, items, setItems, invoiceNumber, invoiceFetcher, def
       className="grid grid-cols-invoice border border-t-0 border-gray-400"
       onBlur={(e) => {
         const data = Object.fromEntries(new FormData(e.currentTarget).entries());
+
         const newItems = items
           .map((_item, _index, _items) => {
-            if (index === _items.length - 1) return data;
             if (_index === index) {
-              if (!data.title?.length) return null;
+              if (!data.title?.length) {
+                if (items.length === 1) return data;
+                return null;
+              }
               return data;
             }
             return _item;
@@ -772,12 +775,12 @@ function Item({ item, index, items, setItems, invoiceNumber, invoiceFetcher, def
     >
       <input type="hidden" name="invoice_number" defaultValue={invoiceNumber} />
       <p className="py-2 pl-1">{index + 1} - </p>
-      <input
+      <textarea
         className="py-2 text-base"
-        type="text"
         placeholder="Type a task here..."
         name="title"
         defaultValue={item.title}
+        rows={1}
       />
       <input
         className="border-l border-gray-400 py-2 text-center"
@@ -799,9 +802,10 @@ function Item({ item, index, items, setItems, invoiceNumber, invoiceFetcher, def
         defaultValue={item.unit_price}
         placeholder="600"
       />
-
       <input className="border-l border-gray-400 py-2 text-center" type="number" name="vat" defaultValue={item.vat} />
-      <p className="border-l border-gray-400 py-2 text-right pr-4">{formatToCurrency(getItemPriceWithVat(item))}</p>
+      <p className="border-l border-gray-400 py-2 text-right pr-4 flex items-center justify-end">
+        {formatToCurrency(getItemPriceWithVat(item))}
+      </p>
     </invoiceFetcher.Form>
   );
 }
