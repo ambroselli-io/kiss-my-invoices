@@ -393,6 +393,13 @@ This should ensure that the PDF file is saved with the desired filename and prev
                 body,
                 filePathAndName,
               });
+
+              if (invoice.status === "DRAFT") {
+                const form = new FormData();
+                form.append("from", "invoice number");
+                form.append("status", "SENT");
+                invoiceFetcher.submit(form, { method: "post" });
+              }
             }}
             title="It will export the invoice as PDF in your folder, and open your default email client with the generic email template you defined in your settings."
           >
