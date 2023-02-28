@@ -25,63 +25,58 @@ function ErrorBoundary({ error }) {
   );
 }
 
-const router = createBrowserRouter(
-  [
-    {
-      path: "/",
-      element: <Root />,
-      loader: webLoader,
-      children: [
-        {
-          element: <Home />,
-          loader: homeLoader,
-          index: true,
-          errorElement: <ErrorBoundary />,
-        },
-        {
-          path: "/legal",
-          element: <Legal />,
-        },
-        {
-          path: "/download",
-          element: <Download />,
-        },
-        {
-          path: "/me",
-          element: <Me />,
-          loader: meLoader,
-          action: meAction,
-        },
-        {
-          path: "/settings",
-          element: <Settings />,
-          loader: settingsLoader,
-          action: settingsAction,
-        },
-        {
-          path: "/invoice/:invoice_number",
-          element: <Invoice />,
-          loader: invoiceLoader,
-          action: invoiceAction,
-        },
-        {
-          path: "/client",
-          element: <Clients />,
-          loader: clientsLoader,
-        },
-        {
-          path: "/client/:clientId",
-          element: <Client />,
-          loader: clientLoader,
-          action: clientAction,
-        },
-      ],
-    },
-  ],
+const router = createBrowserRouter([
   {
-    basename: process.env.NODE_ENV === "production" ? "/kiss-my-invoices" : "/",
+    path: "/",
+    element: <Root />,
+    loader: webLoader,
+    children: [
+      {
+        element: <Home />,
+        loader: homeLoader,
+        index: true,
+        errorElement: <ErrorBoundary />,
+      },
+      {
+        path: "/legal",
+        element: <Legal />,
+      },
+      {
+        path: "/download",
+        element: <Download />,
+      },
+      {
+        path: "/me",
+        element: <Me />,
+        loader: meLoader,
+        action: meAction,
+      },
+      {
+        path: "/settings",
+        element: <Settings />,
+        loader: settingsLoader,
+        action: settingsAction,
+      },
+      {
+        path: "/invoice/:invoice_number",
+        element: <Invoice />,
+        loader: invoiceLoader,
+        action: invoiceAction,
+      },
+      {
+        path: "/client",
+        element: <Clients />,
+        loader: clientsLoader,
+      },
+      {
+        path: "/client/:clientId",
+        element: <Client />,
+        loader: clientLoader,
+        action: clientAction,
+      },
+    ],
   },
-);
+]);
 
 export default function App() {
   return <RouterProvider router={router} />;
