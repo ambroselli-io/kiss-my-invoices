@@ -6,36 +6,22 @@ function Open() {
       <div className="my-12 flex items-center justify-between px-12">
         <h1 className="text-3xl font-bold">Open 👐</h1>
       </div>
-      <div className="flex-col grow bg-white border-y-2 p-12 flex items-start gap-12 justify-start">
-        <p>Here is some data I want to share with you:</p>
+      <div className="flex-col grow bg-white border-y-2 p-12 flex items-start gap-3 justify-start">
+        <p>2023-03-04 - Here is some data I want to share with you:</p>
         <ul className="list-inside list-disc">
-          <li>Hours worked until 2023-03-04: </li>
-          <li>Automatic prefill and customise the email you send to your client. Two clicks and it's sent! 🖱️</li>
-          <li>Add a BCC field if you want to also send the invoice to your accountant or accounting software 🧾</li>
+          <li>Hours worked: 36.5 hours</li>
+          <li>Costs: 3.650€</li>
+          <li>Unique visits of this test page according to plausible.io: 19</li>
+          <li>Visites to download page: 4</li>
+          <li>Turnover: 0€ (payments not available yet 🥸)</li>
           <li>
-            [VERY SOON]: if your root folder is a Git folder, all your data will be automatically saved on your git
-            repo. You own your data! Well, github does... but hey! 🤩
+            Profit: <span className="text-red-500">-3.650€</span>
+          </li>
+          <li>
+            My psychological state: I do like what I created, I will definitely use it for my own. But I don't know if I
+            will be the only one... or not! Anyway, I'm happy I did it.
           </li>
         </ul>
-        <div className="flex flex-col gap-4 items-center justify-center w-full">
-          <a
-            className="rounded bg-gray-800 py-2 px-12 text-gray-50"
-            href={`https://github.com/ambroselli-io/kiss-my-invoices/releases/download/v${packageJson.version}/Kiss-My-Invoice-${packageJson.version}-arm64.dmg`}
-            target="_blank"
-            rel="noreferrer"
-          >
-            Download Mac M1/M2 (arm64)
-          </a>
-          <a
-            className="rounded text-gray-800 border-gray-800 border-2 py-2 px-12 bg-gray-50"
-            href={`https://github.com/ambroselli-io/kiss-my-invoices/releases/download/v${packageJson.version}/Kiss-My-Invoice-${packageJson.version}.dmg`}
-            target="_blank"
-            rel="noreferrer" // github.com/ambroselli-io/kiss-my-invoices/releases/download/v0.0.10/Kiss-My-Invoice-0.0.10.dmg
-          >
-            Download Mac Intel (x86)
-          </a>
-        </div>
-        <p className="text-xs opacity-50 italic mx-auto">Soon available for Windows and Linux, stay tuned!</p>
       </div>
     </div>
   );
