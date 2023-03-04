@@ -1,3 +1,7 @@
+## What is Kiss my Invoices 💋 ?
+
+A demo is worth a thousand words: https://invoices.kiss-my.app/
+
 ## Feedback & Roadmap
 
 Kiss my Invoices is a MVP (Minimum Viable Product) and is still in active development. If you have any feedback or suggestions, please [open an issue](https://github.com/ambroselli-io/kiss-my-invoices/issues/new/choose).
