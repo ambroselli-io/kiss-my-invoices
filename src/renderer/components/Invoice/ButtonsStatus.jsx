@@ -1,8 +1,16 @@
+import dayjs from "dayjs";
 import { useMemo, useState } from "react";
 import { useFetcher } from "react-router-dom";
 
-export function ButtonsSatus({ invoice, invoiceNumber, className = "", alwaysShowAll = false }) {
+export function ButtonsStatus({ invoice, invoiceNumber, className = "", alwaysShowAll = false }) {
   const statusFetcher = useFetcher();
+
+  const numberOfDaysOverdue = useMemo(() => {
+    if (!invoice?.due_date) return 0;
+    const dueDate = dayjs(invoice.due_date);
+    if (dueDate.isAfter(dayjs())) return 0;
+    return dayjs().diff(dueDate, "day");
+  }, [invoice?.due_date]);
 
   const selected = useMemo(() => {
     if (!invoice?.status) return "DRAFT";
@@ -11,8 +19,9 @@ export function ButtonsSatus({ invoice, invoiceNumber, className = "", alwaysSho
       const newValue = statusFetcher.formData?.get("status");
       if (newValue) return newValue;
     }
+    if (invoice?.status === "SENT" && numberOfDaysOverdue > 0) return "OVERDUE";
     return invoice?.status;
-  }, [invoice?.status, statusFetcher.formData, statusFetcher.state, invoiceNumber]);
+  }, [invoice?.status, statusFetcher.formData, statusFetcher.state, invoiceNumber, numberOfDaysOverdue]);
 
   const [showAll, setShowAll] = useState(alwaysShowAll);
 
@@ -46,7 +55,7 @@ export function ButtonsSatus({ invoice, invoiceNumber, className = "", alwaysSho
       </button>
       <button
         className={[
-          selected === "SENT" && "!bg-yellow-300 !text-white",
+          (selected === "SENT" || numberOfDaysOverdue > 0) && "!bg-yellow-300 !text-white",
           "active:!bg-yellow-300 active:!text-white",
           "rounded-full border-2 border-yellow-400 px-6",
           (showAll || selected === "") && "bg-yellow-50 opacity-100 text-gray-500",
@@ -76,7 +85,7 @@ export function ButtonsSatus({ invoice, invoiceNumber, className = "", alwaysSho
         type="submit"
         value="OVERDUE"
       >
-        Overdue
+        {numberOfDaysOverdue > 0 ? <>Overdue {numberOfDaysOverdue}&nbsp;days</> : "Overdue"}
       </button>
       <button
         className={[

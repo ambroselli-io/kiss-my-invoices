@@ -1,3 +1,4 @@
+import dayjs from "dayjs";
 import { countries } from "./countries";
 
 const getItemPrice =
@@ -37,9 +38,19 @@ export const getFormattedTotalVAT = (items = []) => formatToCurrency(getTotalPri
 export const getFormattedTotalPretaxPrice = (items = []) => formatToCurrency(getTotalPretaxPrice(items));
 export const getFormattedTotalPrice = (items = []) => formatToCurrency(getTotalPrice(items));
 
-export const getInvoicesTotalPrice = (invoices = [], statuses = []) => {
+export const getInvoicesTotalPrice = (invoices = [], status = "") => {
   const filteredInvoices =
-    statuses.length === 0 ? invoices : invoices.filter((invoice) => statuses.includes(invoice.status));
+    status.length === 0
+      ? invoices
+      : invoices.filter((invoice) => {
+          if (["OVERDUE", "SENT"].includes(status)) {
+            if (!invoice?.due_date) return status === "SENT";
+            const dueDate = dayjs(invoice.due_date);
+            if (dueDate.isAfter(dayjs())) return status === "SENT";
+            return status === "OVERDUE";
+          }
+          return status === invoice.status;
+        });
   const totalInvoiced = filteredInvoices.reduce((total, invoice) => total + getTotalPrice(invoice.items), 0);
   return formatToCurrency(totalInvoiced);
 };

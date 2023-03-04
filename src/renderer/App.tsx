@@ -1,18 +1,18 @@
 import { createHashRouter, redirect, RouterProvider } from "react-router-dom";
-import Home, { electronLoader as homeLoader } from "./routes/_index";
-import Client, { electronLoader as clientLoader, electronAction as clientAction } from "./routes/clientId";
-import Me, { electronLoader as meLoader, electronAction as meAction } from "./routes/me";
+import Root from "./root";
 import Settings, { electronLoader as settingsLoader, electronAction as settingsAction } from "./routes/settings";
+import Me, { electronLoader as meLoader, electronAction as meAction } from "./routes/me";
+import Invoices, { electronLoader as homeLoader } from "./routes/invoices";
 import Invoice, { electronLoader as invoiceLoader, electronAction as invoiceAction } from "./routes/invoiceId";
+import Clients, { electronLoader as clientsLoader } from "./routes/clients";
+import Client, { electronLoader as clientLoader, electronAction as clientAction } from "./routes/clientId";
+import Legal from "./routes/legal";
 import "./styles/tailwind.css";
 import "./styles/global.css";
 import "./styles/reset.css";
 import { getSettings } from "./utils/settings";
 import type { Settings as SettingsType } from "./utils/settings";
-import Clients, { electronLoader as clientsLoader } from "./routes/clients";
 import { getFolderPath } from "./utils/fileManagement";
-import Legal from "./routes/legal";
-import Root from "./root";
 
 const loader = async ({
   request,
@@ -47,7 +47,7 @@ const router = createHashRouter(
       loader,
       children: [
         {
-          element: <Home />,
+          element: <Invoices />,
           loader: homeLoader,
           index: true,
           errorElement: <ErrorBoundary />,

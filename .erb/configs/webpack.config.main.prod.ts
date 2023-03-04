@@ -79,6 +79,10 @@ const configuration: webpack.Configuration = {
     __dirname: false,
     __filename: false,
   },
+  // https://github.com/yan-foto/electron-reload/issues/71#issuecomment-588988382
+  externals: {
+    fsevents: "require('fsevents')",
+  },
 };
 
 export default merge(baseConfig, configuration);

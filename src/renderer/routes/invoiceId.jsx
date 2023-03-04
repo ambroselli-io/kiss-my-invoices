@@ -1,9 +1,11 @@
+/* eslint-disable no-unsafe-optional-chaining */
 /* eslint-disable no-alert */
 import { Link, redirect, useFetcher, useLoaderData, useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
 import html2pdf from "html2pdf.js";
 import React, { useMemo, useRef, useState } from "react";
 import CreatableSelect from "react-select/creatable";
+import AutoResizeTextarea from "../components/AutoResizeTextarea";
 import { getFolderPath, readFile, writeFile } from "../utils/fileManagement";
 import useSetDocumentTitle from "../services/useSetDocumentTitle";
 import OpenInNewWindowIcon from "../components/OpenInNewWindowIcon";
@@ -24,7 +26,7 @@ import {
   sortInvoices,
 } from "../utils/invoice";
 import { computeEmailBody, computeEmailSubject } from "../utils/contact";
-import { ButtonsSatus } from "../components/Invoice/ButtonsSatus";
+import { ButtonsStatus } from "../components/Invoice/ButtonsStatus";
 import { countries } from "../utils/countries";
 
 const defaultItem = {
@@ -73,7 +75,8 @@ export const webAction = async ({ request, params }) => {
   if (form.get("items")) {
     updatedInvoice.items = JSON.parse(form.get("items")) || [];
     if (updatedInvoice?.items?.length > 0) {
-      window.defaultItem = updatedInvoice.items[updatedInvoice.items.length - 1] ?? defaultItem;
+      const lastItem = updatedInvoice.items[updatedInvoice.items.length - 1] || defaultItem;
+      window.defaultItem = { ...lastItem, title: "" };
     }
   }
   if (form.get("emission_date")) updatedInvoice.emission_date = form.get("emission_date");
@@ -157,7 +160,8 @@ export const electronAction = async ({ request, params }) => {
   if (form.get("items")) {
     updatedInvoice.items = JSON.parse(form.get("items")) || [];
     if (updatedInvoice?.items?.length > 0) {
-      window.defaultItem = updatedInvoice.items[updatedInvoice.items.length - 1] ?? defaultItem;
+      const lastItem = updatedInvoice.items[updatedInvoice.items.length - 1] || defaultItem;
+      window.defaultItem = { ...lastItem, title: "" };
     }
   }
   if (form.get("emission_date")) updatedInvoice.emission_date = form.get("emission_date");
@@ -318,15 +322,15 @@ This should ensure that the PDF file is saved with the desired filename and prev
   return (
     <div
       className={[
-        "border-80 h-full w-full overflow-auto print:overflow-hidden bg-amber-100",
-        isPrinting ? "!overflow-hidden" : "",
+        "border-80 h-full w-full overflow-auto pb-20 print:overflow-hidden bg-amber-100",
+        isPrinting ? "!overflow-hidden !pb-0" : "",
       ].join(" ")}
     >
       <div className={["my-12 flex items-center justify-between px-12 print:hidden"].join(" ")}>
         <h1 className="text-3xl font-bold">Invoice</h1>
         <div className="flex items-center gap-4">
           <button
-            className="rounded border py-2 px-12 bg-white"
+            className="rounded border py-2 px-4"
             type="button"
             onClick={() => {
               if (typeof window !== "undefined") {
@@ -340,21 +344,21 @@ This should ensure that the PDF file is saved with the desired filename and prev
               }
             }}
           >
-            🖨️ Print / Save as PDF
+            🖨️
           </button>
-          {/* <button
-            className="rounded border py-2 px-12 bg-white"
+          <button
+            className="rounded border py-2 px-4"
             type="button"
             title="It will export the invoice as PDF in the location of your choice."
             onClick={() => {
               if (forWeb) {
                 return window.alert("This feature is not available in the web version. Please download the app.");
               }
-              generatePdf();
+              generatePdf(folderPath);
             }}
           >
-            Export as PDF
-          </button> */}
+            💾
+          </button>
           <button
             className="rounded border py-2 px-12 bg-black text-white disabled:opacity-50"
             type="button"
@@ -409,7 +413,7 @@ This should ensure that the PDF file is saved with the desired filename and prev
       </div>
       <div className="h-a4 w-a4 m-auto mb-10 mt-2 max-w-3xl relative">
         <div className="relative w-full">
-          <ButtonsSatus className="print:hidden" invoice={invoice} invoiceNumber={invoiceNumber} alwaysShowAll />
+          <ButtonsStatus className="print:hidden" invoice={invoice} invoiceNumber={invoiceNumber} alwaysShowAll />
           <div className={["flex gap-1 absolute left-full top-0 print:hidden", isPrinting ? "hidden" : ""].join(" ")}>
             <button
               className="rounded border px-4 my-1 bg-white"
@@ -652,6 +656,7 @@ This should ensure that the PDF file is saved with the desired filename and prev
                 items={items}
                 defaultEmissionDate={defaultEmissionDate}
                 defaultDueDate={defaultDueDate}
+                isPrinting={isPrinting}
               />
             );
           })}
@@ -744,44 +749,70 @@ This should ensure that the PDF file is saved with the desired filename and prev
   );
 }
 
-function Item({ item, index, items, setItems, invoiceNumber, invoiceFetcher, defaultEmissionDate, defaultDueDate }) {
+function Item({
+  item,
+  index,
+  items,
+  setItems,
+  invoiceNumber,
+  invoiceFetcher,
+  defaultEmissionDate,
+  defaultDueDate,
+  isPrinting,
+}) {
+  const onSubmit = (domForm) => {
+    const data = Object.fromEntries(new FormData(domForm).entries());
+
+    const newItems = items
+      .map((_item, _index, _items) => {
+        if (_index === index) {
+          if (!data.title?.length) {
+            if (items.length === 1) return data;
+            return null;
+          }
+          return data;
+        }
+        return _item;
+      })
+      .filter(Boolean);
+    const form = new FormData();
+    form.append("items", JSON.stringify(newItems));
+    form.append("invoice_number", invoiceNumber);
+    form.append("emission_date", defaultEmissionDate.format("YYYY-MM-DD"));
+    form.append("due_date", defaultDueDate.format("YYYY-MM-DD"));
+    invoiceFetcher.submit(form, { method: "post" });
+    setItems(newItems);
+  };
+
   return (
     <invoiceFetcher.Form
       key={item.title}
       className="grid grid-cols-invoice border border-t-0 border-gray-400"
       onBlur={(e) => {
-        const data = Object.fromEntries(new FormData(e.currentTarget).entries());
-
-        const newItems = items
-          .map((_item, _index, _items) => {
-            if (_index === index) {
-              if (!data.title?.length) {
-                if (items.length === 1) return data;
-                return null;
-              }
-              return data;
-            }
-            return _item;
-          })
-          .filter(Boolean);
-        const form = new FormData();
-        form.append("items", JSON.stringify(newItems));
-        form.append("invoice_number", invoiceNumber);
-        form.append("emission_date", defaultEmissionDate.format("YYYY-MM-DD"));
-        form.append("due_date", defaultDueDate.format("YYYY-MM-DD"));
-        invoiceFetcher.submit(form, { method: "post" });
-        setItems(newItems);
+        onSubmit(e.currentTarget);
       }}
     >
       <input type="hidden" name="invoice_number" defaultValue={invoiceNumber} />
       <p className="py-2 pl-1">{index + 1} - </p>
-      <textarea
-        className="py-2 text-base"
-        placeholder="Type a task here..."
-        name="title"
-        defaultValue={item.title}
-        rows={1}
-      />
+      {isPrinting ? (
+        <p className="[overflow-wrap:anywhere]">
+          {item.title?.split("\n").map((line, __index, __lines) => {
+            return (
+              <React.Fragment key={line + __index}>
+                {line}
+                {__index !== __lines?.length - 1 ? <br /> : null}
+              </React.Fragment>
+            );
+          })}
+        </p>
+      ) : (
+        <AutoResizeTextarea
+          className="py-2 text-base"
+          placeholder="Type a task here..."
+          name="title"
+          defaultValue={item.title}
+        />
+      )}
       <input
         className="border-l border-gray-400 py-2 text-center"
         type="number"

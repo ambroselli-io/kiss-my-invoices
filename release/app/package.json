@@ -1,6 +1,6 @@
 {
   "name": "kiss-my-invoices",
-  "version": "0.0.16",
+  "version": "0.0.17",
   "description": "A simple invoice manager for freelancers and independants 💋",
   "author": {
     "name": "Arnaud Ambroselli",
@@ -11,9 +11,6 @@
   "scripts": {
     "rebuild": "node -r ts-node/register ../../.erb/scripts/electron-rebuild.js",
     "postinstall": "npm run rebuild && npm run link-modules",
-    "link-modules": "node -r ts-node/register ../../.erb/scripts/link-modules.ts"
-  },
-  "dependencies": {
-    "chokidar": "^3.5.3"
+    "link-modules": "export USE_HARD_LINKS=false && node -r ts-node/register ../../.erb/scripts/link-modules.ts"
   }
 }

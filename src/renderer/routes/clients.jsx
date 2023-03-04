@@ -42,7 +42,7 @@ function Clients() {
   useSetDocumentTitle(`My Clients | ${me?.organisation_name} | 💋 Kiss my Invoices`);
 
   return (
-    <div className="flex h-full w-full flex-col">
+    <div className="flex h-full w-full flex-col overflow-auto pb-20">
       <div className="py-12 flex items-center justify-between px-12 print:hidden bg-blue-200">
         <h1 className="text-3xl font-bold">Clients {me?.organisation_name}</h1>
         <div className="flex items-center gap-4">
@@ -154,16 +154,12 @@ function Clients() {
                 >
                   <p className="border-x border-b-2 p-2 font-bold">{client.organisation_name}</p>
                   <p className="text-right border-x border-b-2 p-2">
-                    {getInvoicesTotalPrice(client.invoices, ["DRAFT"])}
+                    {getInvoicesTotalPrice(client.invoices, "DRAFT")}
                   </p>
-                  <p className="text-right border-x border-b-2 p-2">
-                    {getInvoicesTotalPrice(client.invoices, ["SENT"])}
-                  </p>
-                  <p className="text-right border-x border-b-2 p-2">
-                    {getInvoicesTotalPrice(client.invoices, ["OVERDUE"])}
-                  </p>
-                  <p className="text-right border-x border-b-2 p-2">
-                    {getInvoicesTotalPrice(client.invoices, ["PAID"])}
+                  <p className="text-right border-x border-b-2 p-2">{getInvoicesTotalPrice(client.invoices, "SENT")}</p>
+                  <p className="text-right border-x border-b-2 p-2">{getInvoicesTotalPrice(client.invoices, "PAID")}</p>
+                  <p className="text-right border-x border-b-2 p-2 text-red-500 font-bold bg-red-100">
+                    {getInvoicesTotalPrice(client.invoices, "OVERDUE")}
                   </p>
                 </Link>
               );

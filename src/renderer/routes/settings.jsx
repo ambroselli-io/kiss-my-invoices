@@ -68,7 +68,7 @@ function Settings() {
   if (!folderPath && !forWeb) {
     return (
       <Form
-        className="flex h-full w-full flex-col"
+        className="flex h-full w-full flex-col overflow-auto"
         method="post"
         onChange={(e) => {
           setSaveDisabled(false);
@@ -135,7 +135,7 @@ function Settings() {
 
   return (
     <Form
-      className="flex h-full w-full flex-col bg-orange-200"
+      className="flex h-full w-full flex-col bg-orange-200 overflow-auto pb-20"
       method="post"
       onChange={(e) => {
         const json = Object.fromEntries(new FormData(e.currentTarget));

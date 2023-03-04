@@ -1,6 +1,6 @@
 import OpenTrash from "../OpenTrash";
 import { Score } from "./Score";
-import { ButtonsSatus } from "./ButtonsSatus";
+import { ButtonsStatus } from "./ButtonsStatus";
 import { ButtonsYesNo } from "./ButtonsYesNo";
 import { ButtonsXSToXL } from "./ButtonsXSToXL";
 import { useState } from "react";
@@ -34,7 +34,8 @@ export const FeatureCard = ({ feature, index, className }) => {
         "relative m-4  transform-cpu border-2 border-gray-900 bg-white transition-all hover:scale-105",
         feature.status === "__new" ? "[&_button]:pointer-events-none" : "",
         className,
-      ].join(" ")}>
+      ].join(" ")}
+    >
       {/* <div className="flex-shrink-0 flex-grow-0 basis-2 cursor-pointer  bg-white p-4 text-left font-medium text-gray-900">
                   <p className="m-0">{index}</p>
                 </div> */}
@@ -47,7 +48,8 @@ export const FeatureCard = ({ feature, index, className }) => {
           onClick={(e) => {
             if (!confirm("Are you sure you want to delete this feature?")) e.preventDefault();
           }}
-          className={["opacity-0 transition-all", showTrash ? "opacity-100" : ""].join(" ")}>
+          className={["opacity-0 transition-all", showTrash ? "opacity-100" : ""].join(" ")}
+        >
           {feature.status !== "__new" && <OpenTrash className="h-6 w-8 text-red-700" />}
         </button>
       </div>
@@ -55,16 +57,11 @@ export const FeatureCard = ({ feature, index, className }) => {
         <textarea
           defaultValue={feature.content}
           placeholder={
-            feature.status === "__new"
-              ? "You can type in a new feature here"
-              : "Mmmmh it looks like you're pivoting..."
+            feature.status === "__new" ? "You can type in a new feature here" : "Mmmmh it looks like you're pivoting..."
           }
           name="content"
           form={formId}
-          className={[
-            "h-full w-full p-1",
-            feature.status === "__new" ? "" : "font-bold focus:font-normal",
-          ].join(" ")}
+          className={["h-full w-full p-1", feature.status === "__new" ? "" : "font-bold focus:font-normal"].join(" ")}
           onBlur={(e) => {
             featureCardFetcher.submit(e.target.form, { method: "post", replace: false });
           }}
@@ -92,24 +89,14 @@ export const FeatureCard = ({ feature, index, className }) => {
       </div>
       <div className="mx-1 flex items-center justify-between gap-2 bg-white text-left font-medium text-gray-900">
         <h4>{`❗️\u00A0Priority`}:</h4>
-        <ButtonsYesNo
-          form={formId}
-          name="priority"
-          feature={feature}
-          featureFetcher={featureCardFetcher}
-        />
+        <ButtonsYesNo form={formId} name="priority" feature={feature} featureFetcher={featureCardFetcher} />
       </div>
       <div className="mx-1 flex items-center justify-between gap-2 bg-white text-left font-medium text-gray-900">
         {`💯\u00A0Score`}
         <Score feature={feature} featureFetcher={featureCardFetcher} className="my-2 justify-end" />
       </div>
       <div className="flex flex-col items-stretch justify-center gap-2 bg-white text-left font-medium text-gray-900">
-        <ButtonsSatus
-          form={formId}
-          feature={feature}
-          featureFetcher={featureCardFetcher}
-          className="justify-center"
-        />
+        <ButtonsStatus form={formId} feature={feature} featureFetcher={featureCardFetcher} className="justify-center" />
       </div>
     </featureCardFetcher.Form>
   );

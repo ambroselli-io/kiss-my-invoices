@@ -59,7 +59,7 @@ function Me() {
 
   return (
     <Form
-      className="flex h-full w-full flex-col bg-green-200"
+      className="flex h-full w-full flex-col bg-green-200 overflow-auto pb-20"
       method="post"
       form="me"
       onChange={(e) => {

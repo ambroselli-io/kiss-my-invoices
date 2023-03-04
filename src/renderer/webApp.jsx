@@ -1,16 +1,17 @@
-import { createBrowserRouter, NavLink, Outlet, RouterProvider, useMatches } from "react-router-dom";
-import Home, { webLoader as homeLoader } from "./routes/_index";
-import Client, { webLoader as clientLoader, webAction as clientAction } from "./routes/clientId";
-import Me, { webLoader as meLoader, webAction as meAction } from "./routes/me";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import Root from "./root";
 import Settings, { webLoader as settingsLoader, webAction as settingsAction } from "./routes/settings";
+import Me, { webLoader as meLoader, webAction as meAction } from "./routes/me";
+import Invoices, { webLoader as homeLoader } from "./routes/invoices";
 import Invoice, { webLoader as invoiceLoader, webAction as invoiceAction } from "./routes/invoiceId";
+import Clients, { webLoader as clientsLoader } from "./routes/clients";
+import Client, { webLoader as clientLoader, webAction as clientAction } from "./routes/clientId";
+import Download from "./routes/download";
+import Legal from "./routes/legal";
 import "./styles/tailwind.css";
 import "./styles/global.css";
 import "./styles/reset.css";
-import Clients, { webLoader as clientsLoader } from "./routes/clients";
-import Legal from "./routes/legal";
-import Root from "./root";
-import Download from "./routes/download";
+import Open from "./routes/open";
 
 function webLoader() {
   return { forWeb: true };
@@ -32,7 +33,7 @@ const router = createBrowserRouter([
     loader: webLoader,
     children: [
       {
-        element: <Home />,
+        element: <Invoices />,
         loader: homeLoader,
         index: true,
         errorElement: <ErrorBoundary />,
@@ -44,6 +45,10 @@ const router = createBrowserRouter([
       {
         path: "/download",
         element: <Download />,
+      },
+      {
+        path: "/open",
+        element: <Open />,
       },
       {
         path: "/me",

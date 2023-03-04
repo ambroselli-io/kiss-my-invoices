@@ -1,7 +1,7 @@
 {
   "name": "kiss-my-invoices",
   "description": "A simple invoice manager for freelancers and independants 💋",
-  "version": "0.0.16",
+  "version": "0.0.17",
   "license": "GNU Affero General Public License v3.0",
   "keywords": [
     "invoice",
@@ -90,7 +90,6 @@
     }
   },
   "dependencies": {
-    "chokidar": "^3.5.3",
     "dayjs": "^1.11.7",
     "dotenv": "^9.0.2",
     "electron-debug": "^3.2.0",
@@ -128,6 +127,7 @@
     "autoprefixer": "^10.4.13",
     "browserslist-config-erb": "^0.0.3",
     "chalk": "^4.1.2",
+    "chokidar": "^3.5.3",
     "concurrently": "^7.6.0",
     "core-js": "^3.27.2",
     "cross-env": "^7.0.3",

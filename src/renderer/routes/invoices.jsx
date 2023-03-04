@@ -31,7 +31,7 @@ export const electronLoader = async () => {
   };
 };
 
-function Home() {
+function Invoices() {
   const data = useLoaderData();
   const invoices = data.invoices || [];
   const me = data.me || {};
@@ -43,7 +43,7 @@ function Home() {
   useSetDocumentTitle(`Invoices ${me?.organisation_name} | 💋 Kiss my Invoices`);
 
   return (
-    <div className="flex h-full w-full flex-col">
+    <div className="flex h-full w-full flex-col overflow-auto pb-20">
       <div className="py-12 flex items-center justify-between px-12 print:hidden bg-amber-100">
         <h1 className="text-3xl font-bold">Invoices {me?.organisation_name}</h1>
         <div className="flex items-center gap-4">
@@ -194,4 +194,4 @@ function HeaderButton({ title, field, onClick }) {
   );
 }
 
-export default Home;
+export default Invoices;

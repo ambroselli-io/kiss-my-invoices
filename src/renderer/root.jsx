@@ -16,7 +16,7 @@ function Root() {
   // const clientNumber = isClient && isClient[0].replace("/client/", "");
 
   return (
-    <div className="h-full w-full">
+    <div className="h-full w-full overflow-hidden">
       {!!forWeb && (
         <p className="bg-rose-500 text-white font-bold text-xs py-3 m-0 text-center">
           This is for demo purpose only, your data won&#39;t be saved. Please{" "}
@@ -48,6 +48,11 @@ function Root() {
           <NavLink to="legal" className="ml-auto px-5 py-2  [&.active_.kiss]:!visible">
             <span className="kiss invisible mr-2">💋</span>About-us
           </NavLink>
+          {!!forWeb && (
+            <NavLink to="open" className="px-5 py-2  [&.active_.kiss]:!visible">
+              <span className="kiss invisible mr-2">💋</span>Open
+            </NavLink>
+          )}
           {!!forWeb && (
             <NavLink to="download" className="px-5 py-2  [&.active_.kiss]:!visible">
               <span className="kiss invisible mr-2">💋</span>Download

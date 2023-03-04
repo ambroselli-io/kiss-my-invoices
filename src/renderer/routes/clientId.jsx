@@ -85,7 +85,7 @@ function Client() {
 
   return (
     <Form
-      className="flex h-full w-full flex-col bg-blue-200"
+      className="flex h-full w-full flex-col bg-blue-200 overflow-auto pb-20"
       key={JSON.stringify(defaultValues)}
       method="post"
       id="client-form"
