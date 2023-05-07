@@ -15,7 +15,7 @@ import {
   getFormattedTotalPretaxPrice,
   getFormattedTotalPrice,
   getFormattedTotalVAT,
-  getItemPriceWithVat,
+  getItemPriceWithNoVat,
 } from "../utils/prices";
 import { getSettings } from "../utils/settings";
 import {
@@ -835,7 +835,7 @@ function Item({
       />
       <input className="border-l border-gray-400 py-2 text-center" type="number" name="vat" defaultValue={item.vat} />
       <p className="border-l border-gray-400 py-2 text-right pr-4 flex items-center justify-end">
-        {formatToCurrency(getItemPriceWithVat(item))}
+        {formatToCurrency(getItemPriceWithNoVat(item))}
       </p>
     </invoiceFetcher.Form>
   );

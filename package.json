@@ -1,7 +1,7 @@
 {
   "name": "kiss-my-invoices",
   "description": "A simple invoice manager for freelancers and independants 💋",
-  "version": "0.0.17",
+  "version": "0.0.18",
   "license": "GNU Affero General Public License v3.0",
   "keywords": [
     "invoice",
@@ -35,7 +35,6 @@
     "start:main": "cross-env NODE_ENV=development electronmon -r ts-node/register/transpile-only .",
     "start:preload": "cross-env NODE_ENV=development TS_NODE_TRANSPILE_ONLY=true webpack --config ./.erb/configs/webpack.config.preload.dev.ts",
     "start:renderer": "cross-env NODE_ENV=development TS_NODE_TRANSPILE_ONLY=true webpack serve --config ./.erb/configs/webpack.config.renderer.dev.ts",
-    "test": "jest",
     "web:dev": "vite",
     "web:build": "vite build --emptyOutDir",
     "web:preview": "vite preview"
@@ -115,7 +114,7 @@
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.4.0",
     "@types/jest": "^29.4.0",
-    "@types/node": "18.11.19",
+    "@types/node": "^18.11.19",
     "@types/react": "^18.0.27",
     "@types/react-dom": "^18.0.10",
     "@types/react-test-renderer": "^18.0.0",
@@ -159,6 +158,7 @@
     "patch-package": "^6.5.1",
     "postcss": "^8.4.21",
     "postcss-loader": "^7.0.2",
+    "pre-commit": "^1.2.2",
     "prettier": "^2.8.3",
     "react-refresh": "^0.14.0",
     "react-test-renderer": "^18.2.0",

@@ -3,6 +3,7 @@ import Root from "./root";
 import Settings, { electronLoader as settingsLoader, electronAction as settingsAction } from "./routes/settings";
 import Me, { electronLoader as meLoader, electronAction as meAction } from "./routes/me";
 import Invoices, { electronLoader as homeLoader } from "./routes/invoices";
+import Stats, { electronLoader as statsLoader } from "./routes/stats";
 import Invoice, { electronLoader as invoiceLoader, electronAction as invoiceAction } from "./routes/invoiceId";
 import Clients, { electronLoader as clientsLoader } from "./routes/clients";
 import Client, { electronLoader as clientLoader, electronAction as clientAction } from "./routes/clientId";
@@ -50,7 +51,11 @@ const router = createHashRouter(
           element: <Invoices />,
           loader: homeLoader,
           index: true,
-          errorElement: <ErrorBoundary />,
+        },
+        {
+          path: "stats",
+          element: <Stats />,
+          loader: statsLoader,
         },
         {
           path: "legal",

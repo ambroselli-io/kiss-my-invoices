@@ -33,7 +33,8 @@ export const formatToCurrency = (number) => {
 
 export const getTotalPretaxPrice = (items = []) =>
   items.map(getItemPriceWithNoVat).reduce((total, price) => price + total, 0);
-export const getTotalPrice = (items = []) => items.map(getItemPriceWithVat).reduce((total, price) => price + total, 0);
+export const getTotalPrice = (items = []) =>
+  Math.round(items.map(getItemPriceWithVat).reduce((total, price) => price + total, 0));
 export const getFormattedTotalVAT = (items = []) => formatToCurrency(getTotalPrice(items) - getTotalPretaxPrice(items));
 export const getFormattedTotalPretaxPrice = (items = []) => formatToCurrency(getTotalPretaxPrice(items));
 export const getFormattedTotalPrice = (items = []) => formatToCurrency(getTotalPrice(items));

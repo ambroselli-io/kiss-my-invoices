@@ -40,6 +40,9 @@ function Root() {
           <NavLink to="client" className="px-5 py-2 [&.active_.kiss]:!visible">
             <span className="kiss invisible mr-2">💋</span>My clients
           </NavLink>
+          <NavLink to="stats" className="px-5 py-2 [&.active_.kiss]:!visible">
+            <span className="kiss invisible mr-2">💋</span>Stats
+          </NavLink>
           {!!invoice_number && (
             <NavLink to={`invoice/${invoice_number}`} className="px-5 py-2">
               <span className="mr-2">💋</span>Invoice {invoice_number}

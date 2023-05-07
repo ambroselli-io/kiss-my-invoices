@@ -3,6 +3,7 @@ import Root from "./root";
 import Settings, { webLoader as settingsLoader, webAction as settingsAction } from "./routes/settings";
 import Me, { webLoader as meLoader, webAction as meAction } from "./routes/me";
 import Invoices, { webLoader as homeLoader } from "./routes/invoices";
+import Stats, { webLoader as statsLoader } from "./routes/stats";
 import Invoice, { webLoader as invoiceLoader, webAction as invoiceAction } from "./routes/invoiceId";
 import Clients, { webLoader as clientsLoader } from "./routes/clients";
 import Client, { webLoader as clientLoader, webAction as clientAction } from "./routes/clientId";
@@ -37,6 +38,10 @@ const router = createBrowserRouter([
         loader: homeLoader,
         index: true,
         errorElement: <ErrorBoundary />,
+      },
+      {
+        element: <Stats />,
+        loader: statsLoader,
       },
       {
         path: "/legal",
