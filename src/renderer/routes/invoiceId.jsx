@@ -234,6 +234,7 @@ function Invoice() {
   const [isPrinting, setIsPrinting] = useState(false);
 
   const generatePdf = async (folder) => {
+    console.log("folder", folder);
     const invoiceFileName = getInvoiceName({ invoice, me, settings, client });
     const opt = {
       margin: 0,
@@ -642,7 +643,7 @@ This should ensure that the PDF file is saved with the desired filename and prev
               <br />
               (%)
             </CenteredForPrinting>
-            <CenteredForPrinting isPrinting={isPrinting}>Price</CenteredForPrinting>
+            <CenteredForPrinting isPrinting={isPrinting}>Pre-tax total price</CenteredForPrinting>
           </div>
           {items?.map((item, index) => {
             return (
