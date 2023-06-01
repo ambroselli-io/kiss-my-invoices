@@ -234,7 +234,6 @@ function Invoice() {
   const [isPrinting, setIsPrinting] = useState(false);
 
   const generatePdf = async (folder) => {
-    console.log("folder", folder);
     const invoiceFileName = getInvoiceName({ invoice, me, settings, client });
     const opt = {
       margin: 0,
@@ -351,11 +350,27 @@ This should ensure that the PDF file is saved with the desired filename and prev
             className="rounded border py-2 px-4"
             type="button"
             title="It will export the invoice as PDF in the location of your choice."
-            onClick={() => {
+            onClick={async () => {
               if (forWeb) {
                 return window.alert("This feature is not available in the web version. Please download the app.");
               }
-              generatePdf(folderPath);
+              const pdfData = await generatePdf(folderPath);
+
+              const invoiceFileName = getInvoiceName({ invoice, me, settings, client });
+              const filePathAndName = `${folderPath}/${invoiceFileName}`;
+
+              const confirmedPathName = await window.electron.ipcRenderer.invoke(
+                "app:save-pdf",
+                pdfData,
+                filePathAndName,
+              );
+
+              if (!confirmedPathName || confirmedPathName !== filePathAndName) {
+                return window.electron.ipcRenderer.invoke(
+                  "dialog:showMessageBoxSync",
+                  "The file was not saved. Please contact the developer.",
+                );
+              }
             }}
           >
             💾
@@ -796,11 +811,11 @@ function Item({
       <input type="hidden" name="invoice_number" defaultValue={invoiceNumber} />
       <p className="py-2 pl-1">{index + 1} - </p>
       {isPrinting ? (
-        <p className="[overflow-wrap:anywhere]">
+        <p className="[overflow-wrap:anywhere] flex items-center justify-start">
           {item.title?.split("\n").map((line, __index, __lines) => {
             return (
               <React.Fragment key={line + __index}>
-                {line}
+                {line.trim()}
                 {__index !== __lines?.length - 1 ? <br /> : null}
               </React.Fragment>
             );

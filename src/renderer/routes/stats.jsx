@@ -53,7 +53,7 @@ function Invoices() {
 
   const totalYear = Object.values(reducedByMonth).reduce((acc, value) => acc + value, 0);
 
-  const estimationYear = (totalYear / Object.keys(reducedByMonth).length) * 12;
+  const estimationYear = Math.round((totalYear / Object.keys(reducedByMonth).length) * 12);
 
   return (
     <div className="flex h-full w-full flex-col overflow-auto pb-20">

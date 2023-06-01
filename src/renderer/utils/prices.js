@@ -44,7 +44,7 @@ export const getInvoicesTotalPrice = (invoices = [], status = "") => {
     status.length === 0
       ? invoices
       : invoices.filter((invoice) => {
-          if (["OVERDUE", "SENT"].includes(status)) {
+          if (["OVERDUE", "SENT"].includes(status) && invoice.status === "SENT") {
             if (!invoice?.due_date) return status === "SENT";
             const dueDate = dayjs(invoice.due_date);
             if (dueDate.isAfter(dayjs())) return status === "SENT";

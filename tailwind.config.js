@@ -8,8 +8,8 @@ module.exports = {
       },
       gridTemplateColumns: {
         // invoices: "minmax(0, 3fr) minmax(0, 10fr) minmax(0, 7fr) repeat(4, minmax(0, 3fr))",
-        invoices: "minmax(0, 3fr) minmax(0, 10fr) minmax(0, 7fr) repeat(3, minmax(0, 3fr))",
-        clients: "minmax(0, 10fr) repeat(4, minmax(0, 4fr))",
+        invoices: "minmax(0, 3fr) minmax(0, 10fr) minmax(0, 5fr) repeat(2, minmax(0, 3fr)) minmax(0, 4fr)",
+        clients: "minmax(0, 10fr) repeat(5, minmax(0, 4fr))",
         invoice: "2rem minmax(0, 10fr) minmax(0, 4fr) minmax(0, 2fr) minmax(0, 4fr) minmax(0, 2fr)  minmax(0, 4fr)",
         stats: "1fr 1fr",
       },

@@ -121,6 +121,17 @@ function Clients() {
                   />
                 </div>
               </div>
+              <div className="flex cursor-pointer border-y-2 border-x border-gray-900 bg-white p-2 text-left font-medium text-gray-900">
+                <div className="relative flex w-full justify-end -translate-y-1/2 rotate-90 md:translate-y-0 md:rotate-0">
+                  <SortArrowButton
+                    field="content"
+                    onClick={onColumnClick}
+                    // sortOrder={sortOrder}
+                    // sortBy={sortBy}
+                  />
+                  <HeaderButton className="text-right" title={`🏦\u00A0Total`} onClick={onColumnClick} />
+                </div>
+              </div>
               {/* <div className="cursor-pointer border-y-2 border-x border-gray-900 bg-white p-2 text-left font-medium text-gray-900 md:flex">
               <div className="relative flex w-full -translate-y-1/2 rotate-90 md:translate-y-0 md:rotate-0">
                 <SortArrowButton
@@ -160,6 +171,9 @@ function Clients() {
                   <p className="text-right border-x border-b-2 p-2">{getInvoicesTotalPrice(client.invoices, "PAID")}</p>
                   <p className="text-right border-x border-b-2 p-2 text-red-500 font-bold bg-red-100">
                     {getInvoicesTotalPrice(client.invoices, "OVERDUE")}
+                  </p>
+                  <p className="text-right border-x border-b-2 font-semibold p-2">
+                    {getInvoicesTotalPrice(client.invoices)}
                   </p>
                 </Link>
               );
